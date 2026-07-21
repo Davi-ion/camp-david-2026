@@ -12,12 +12,12 @@ datasource db {
   provider = "sqlite"
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
+model Staff {
+  id        String   @id @default(cuid())
   name      String
-  email     String   @unique
-  role      String   @default("user")
-  profile   String?
+  pin       String
+  role      String   @default("staff")
+  group     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

@@ -5,7 +5,7 @@ import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
 import { SkeletonTableRow } from '../components/Skeleton';
 
-const API = 'http://localhost:3001';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const ROLES = {
   admin:     { label: 'Admin',     color: '#146051', bg: '#E8F5F1' },

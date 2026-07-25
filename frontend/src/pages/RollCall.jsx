@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
+import { usePermissions } from '../hooks/usePermissions';
 import { CAMP_DAYS } from '../data/schedule';
 import { sessions } from '../data/sessions';
 import { GROUPS } from '../data/campers';
 import TopBar from '../components/TopBar';
+import EmptyState from '../components/EmptyState';
 
 function getInitials(name) {
   return name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
@@ -11,7 +13,9 @@ function getInitials(name) {
 
 export default function RollCall() {
   const { state, dispatch } = useApp();
+  const { hasPermission } = usePermissions();
   const user = state.currentUser;
+  const isAdmin = hasPermission('manage:users') || hasPermission('all');
 
   // Find current camp day or default
   const today = new Date();
@@ -31,7 +35,7 @@ export default function RollCall() {
   // Filter campers by role
   const visibleCampers = useMemo(() => {
     let list = state.campers;
-    if (user?.role !== 'admin') {
+    if (!isAdmin) {
       list = list.filter((c) => c.group === user?.group);
     } else if (groupFilter !== 'all') {
       list = list.filter((c) => c.group === groupFilter);
@@ -121,7 +125,7 @@ export default function RollCall() {
         </div>
 
         {/* Group Filter (Admin only) */}
-        {user?.role === 'admin' && (
+        {isAdmin && (
           <div className="filter-tabs" style={{ marginTop: 14 }}>
             <button
               className={`filter-tab ${groupFilter === 'all' ? 'active' : ''}`}
@@ -175,10 +179,11 @@ export default function RollCall() {
 
         {/* Camper List */}
         {!sessionKey ? (
-          <div className="empty-state">
-            <div className="empty-state-icon">📋</div>
-            <div className="empty-state-text">Select a session to begin roll call</div>
-          </div>
+          <EmptyState 
+            icon="📋"
+            title="Ready for Roll Call"
+            description="Select a session above to begin."
+          />
         ) : (
           <div style={{ marginTop: 16 }}>
             {Object.entries(groupedCampers).map(([groupId, camperList]) => {

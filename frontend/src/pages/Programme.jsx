@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { usePermissions } from '../hooks/usePermissions';
 import { CAMP_DAYS, schedule } from '../data/schedule';
 import { staff } from '../data/staff';
 import TopBar from '../components/TopBar';
 
 export default function Programme() {
   const { state, dispatch } = useApp();
+  const { hasPermission } = usePermissions();
   const user = state.currentUser;
 
   const today = new Date();
@@ -20,7 +22,7 @@ export default function Programme() {
   const daySchedule = schedule[selectedDay] || [];
   const dayAnnouncements = state.announcements.filter((a) => a.day === selectedDay);
 
-  const canPost = user?.role === 'admin' || user?.role === 'team_lead';
+  const canPost = hasPermission('create:announcements');
 
   // Check if event is happening now
   const nowMinutes = today.getHours() * 60 + today.getMinutes();

@@ -1,7 +1,9 @@
 import { useState, useMemo, useRef } from 'react';
 import { useApp } from '../context/AppContext';
+import { usePermissions } from '../hooks/usePermissions';
 import { GROUPS } from '../data/campers';
 import TopBar from '../components/TopBar';
+import EmptyState from '../components/EmptyState';
 
 function getInitials(name) {
   return name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
@@ -9,6 +11,7 @@ function getInitials(name) {
 
 export default function Campers() {
   const { state, dispatch } = useApp();
+  const { canEdit } = usePermissions();
   const user = state.currentUser;
 
   const [search, setSearch] = useState('');
@@ -118,7 +121,7 @@ export default function Campers() {
         </div>
 
         {/* Group Filter (Admin) */}
-        {user?.role === 'admin' && (
+        {canEdit && (
           <div className="filter-tabs" style={{ marginTop: 12 }}>
             <button
               className={`filter-tab ${groupFilter === 'all' ? 'active' : ''}`}
@@ -142,7 +145,7 @@ export default function Campers() {
         )}
 
         {/* CSV Import (Admin only) */}
-        {user?.role === 'admin' && (
+        {canEdit && (
           <div style={{ marginTop: 14 }}>
             <button
               className="btn btn-sm btn-outline btn-full"
@@ -192,10 +195,11 @@ export default function Campers() {
 
         {/* Camper List */}
         {filteredCampers.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-state-icon">👥</div>
-            <div className="empty-state-text">No campers found</div>
-          </div>
+          <EmptyState 
+            icon="👥"
+            title="No campers found"
+            description="Try adjusting your search or filters."
+          />
         ) : (
           Object.entries(groupedCampers).map(([groupId, camperList]) => {
             const group = GROUPS.find((g) => g.id === groupId);

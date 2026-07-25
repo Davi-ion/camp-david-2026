@@ -3,7 +3,6 @@ import { campers as seedCampers } from '../data/campers';
 
 const AppContext = createContext(null);
 
-// Load state from localStorage
 function loadState() {
   try {
     const saved = localStorage.getItem('campDavid2026');
@@ -13,65 +12,47 @@ function loadState() {
 }
 
 const initialState = {
-  currentUser: null,
+  currentUser: null, // includes token, permissions, role, etc.
+  notifications: [],
   campers: seedCampers,
-  attendance: {},    // { "wed-arrival": { "c1": "present", "c2": "absent" } }
-  incidents: [
-    // Sample incidents
-    {
-      id: 'inc1',
-      camperId: 'c1',
-      type: 'medical',
-      description: 'Camper experienced mild allergic reaction after lunch. EpiPen was not needed. Monitored for 2 hours.',
-      reportedBy: 's2',
-      reportedAt: '2026-07-29T14:15:00',
-      status: 'open',
-    },
-    {
-      id: 'inc2',
-      camperId: 'c8',
-      type: 'welfare',
-      description: 'Camper feeling homesick and withdrawn from group activities. Counsellor assigned.',
-      reportedBy: 's5',
-      reportedAt: '2026-07-29T16:30:00',
-      status: 'in_progress',
-    },
-  ],
-  announcements: [
-    {
-      id: 'ann1',
-      text: 'Medical team needed at Block B immediately. Camper with suspected allergic reaction.',
-      author: 's2',
-      createdAt: '2026-07-29T14:15:00',
-      urgent: true,
-      day: 'wed',
-    },
-    {
-      id: 'ann2',
-      text: 'All team leads: submit registration forms to the admin desk before 4:00 PM today.',
-      author: 's1',
-      createdAt: '2026-07-29T12:30:00',
-      urgent: false,
-      day: 'wed',
-    },
-    {
-      id: 'ann3',
-      text: 'First roll call at 5:30 PM. Have your group assembled at the field gate by 5:25 PM.',
-      author: 's3',
-      createdAt: '2026-07-29T11:02:00',
-      urgent: false,
-      day: 'wed',
-    },
-  ],
+  attendance: {},
+  incidents: [],
+  announcements: [],
 };
 
 function reducer(state, action) {
   switch (action.type) {
     case 'LOGIN':
-      return { ...state, currentUser: action.payload };
+      // Store token securely
+      sessionStorage.setItem('camp_token', action.payload.token);
+      return { ...state, currentUser: action.payload.user };
 
     case 'LOGOUT':
-      return { ...state, currentUser: null };
+      sessionStorage.removeItem('camp_token');
+      return { ...state, currentUser: null, notifications: [] };
+
+    case 'UPDATE_PROFILE':
+      return {
+        ...state,
+        currentUser: { ...state.currentUser, ...action.payload }
+      };
+
+    case 'SET_NOTIFICATIONS':
+      return { ...state, notifications: action.payload };
+
+    case 'MARK_NOTIFICATION_READ':
+      return {
+        ...state,
+        notifications: state.notifications.map(n =>
+          n.id === action.payload ? { ...n, isRead: true } : n
+        )
+      };
+
+    case 'MARK_ALL_NOTIFICATIONS_READ':
+      return {
+        ...state,
+        notifications: state.notifications.map(n => ({ ...n, isRead: true }))
+      };
 
     case 'SET_ATTENDANCE': {
       const { sessionKey, camperId, status } = action.payload;
@@ -115,7 +96,7 @@ function reducer(state, action) {
       return { ...state, campers: [...state.campers, ...action.payload] };
 
     case 'LOAD_STATE':
-      return { ...action.payload, currentUser: state.currentUser };
+      return { ...action.payload, currentUser: state.currentUser, notifications: state.notifications };
 
     default:
       return state;
@@ -124,12 +105,11 @@ function reducer(state, action) {
 
 export function AppProvider({ children }) {
   const saved = loadState();
-  const init = saved ? { ...initialState, ...saved, currentUser: null } : initialState;
+  const init = saved ? { ...initialState, ...saved, currentUser: null, notifications: [] } : initialState;
   const [state, dispatch] = useReducer(reducer, init);
 
-  // Persist to localStorage on every state change (except currentUser)
   useEffect(() => {
-    const { currentUser, ...rest } = state;
+    const { currentUser, notifications, ...rest } = state;
     localStorage.setItem('campDavid2026', JSON.stringify(rest));
   }, [state]);
 

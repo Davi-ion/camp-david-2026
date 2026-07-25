@@ -1,181 +1,238 @@
-import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 
 const API = 'http://localhost:3001';
-
-const ROLE_LABELS = {
-  admin:     'Admin',
-  team_lead: 'Team Lead',
-  staff:     'Staff',
-};
 
 export default function Login() {
   const { dispatch } = useApp();
   const navigate = useNavigate();
 
-  const [staffList, setStaffList]       = useState([]);
-  const [loadingStaff, setLoadingStaff] = useState(true);
-  const [backendError, setBackendError] = useState('');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [shake, setShake] = useState(false);
 
-  const [selectedStaff, setSelectedStaff] = useState('');
-  const [pin, setPin]                     = useState(['', '', '', '']);
-  const [error, setError]                 = useState('');
-  const [shake, setShake]                 = useState(false);
-  const [loggingIn, setLoggingIn]         = useState(false);
-
-  const pinRefs = [useRef(), useRef(), useRef(), useRef()];
-
-  // Load staff list from backend on mount
-  useEffect(() => {
-    fetch(`${API}/api/staff`)
-      .then((res) => {
-        if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then((data) => setStaffList(data))
-      .catch(() =>
-        setBackendError('Could not connect to the server. Please make sure the backend is running.')
-      )
-      .finally(() => setLoadingStaff(false));
-  }, []);
+  // Force password change flow
+  const [forceChange, setForceChange] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
 
   const triggerShake = () => {
     setShake(true);
-    setPin(['', '', '', '']);
-    pinRefs[0].current?.focus();
     setTimeout(() => setShake(false), 500);
-  };
-
-  const handlePinChange = (index, value) => {
-    if (!/^\d*$/.test(value)) return;
-    const next = [...pin];
-    next[index] = value.slice(-1);
-    setPin(next);
-    setError('');
-    if (value && index < 3) pinRefs[index + 1].current?.focus();
-  };
-
-  const handlePinKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !pin[index] && index > 0) {
-      pinRefs[index - 1].current?.focus();
-    }
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    const enteredPin = pin.join('');
+    if (!identifier || !password) {
+      setError('Please enter your email/username and password');
+      triggerShake();
+      return;
+    }
 
-    if (!selectedStaff) { setError('Please select your name'); return; }
-    if (enteredPin.length < 4) { setError('Please enter your 4-digit PIN'); return; }
-
-    setLoggingIn(true);
+    setLoading(true);
     setError('');
 
     try {
-      const res = await fetch(`${API}/api/login`, {
+      const res = await fetch(`${API}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: selectedStaff, pin: enteredPin }),
+        body: JSON.stringify({ identifier, password }),
       });
 
-      if (res.status === 401) {
-        setError('Incorrect PIN. Try again.');
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Login failed');
         triggerShake();
+        setLoading(false);
         return;
       }
 
-      if (!res.ok) throw new Error('Server error');
+      if (data.user.forcePasswordChange) {
+        // Store token temporarily to allow force-change request
+        sessionStorage.setItem('camp_token', data.token);
+        setForceChange(true);
+        setLoading(false);
+        return;
+      }
 
-      const user = await res.json();
-      dispatch({ type: 'LOGIN', payload: user });
+      dispatch({ type: 'LOGIN', payload: data });
       navigate('/');
     } catch {
-      setError('Login failed — check your connection and try again.');
+      setError('Could not connect to server. Please try again.');
       triggerShake();
-    } finally {
-      setLoggingIn(false);
+      setLoading(false);
+    }
+  };
+
+  const handleForceChange = async (e) => {
+    e.preventDefault();
+    if (!newPassword || newPassword.length < 8) {
+      setError('Password must be at least 8 characters');
+      triggerShake();
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const token = sessionStorage.getItem('camp_token');
+      const res = await fetch(`${API}/api/auth/force-change-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ newPassword }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Failed to update password');
+        triggerShake();
+        setLoading(false);
+        return;
+      }
+
+      dispatch({ type: 'LOGIN', payload: data });
+      navigate('/');
+    } catch {
+      setError('Could not connect to server.');
+      triggerShake();
+      setLoading(false);
     }
   };
 
   return (
     <div className="login-page">
-      <form
-        onSubmit={handleLogin}
+      <div 
         className="login-card"
         style={shake ? { animation: 'shake 0.4s ease' } : {}}
       >
         <div className="login-logo">⛺</div>
         <h1 className="login-title">Camp David 2026</h1>
-        <p className="login-subtitle">Staff Portal — David's Army</p>
+        <p className="login-subtitle">
+          {forceChange ? 'Set New Password' : 'Staff Portal — David\'s Army'}
+        </p>
 
-        {/* Backend offline warning */}
-        {backendError && (
+        {error && (
           <div style={{
             background: '#FDE8EA', color: '#DC3545', borderRadius: 8,
             padding: '10px 14px', fontSize: 13, marginBottom: 16, fontWeight: 500,
+            textAlign: 'center'
           }}>
-            ⚠️ {backendError}
-          </div>
-        )}
-
-        {/* Staff selector */}
-        <div className="form-group">
-          <label htmlFor="staff-select">Select your name</label>
-          <select
-            id="staff-select"
-            value={selectedStaff}
-            disabled={loadingStaff || !!backendError}
-            onChange={(e) => { setSelectedStaff(e.target.value); setError(''); }}
-          >
-            <option value="">
-              {loadingStaff ? 'Loading staff…' : '— Choose staff member —'}
-            </option>
-            {staffList.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name} ({ROLE_LABELS[s.role] ?? s.role})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* PIN input */}
-        <div className="form-group">
-          <label>Enter PIN</label>
-          <div className="pin-input-group">
-            {pin.map((digit, i) => (
-              <input
-                key={i}
-                ref={pinRefs[i]}
-                type="password"
-                inputMode="numeric"
-                maxLength={1}
-                className="pin-digit"
-                value={digit}
-                disabled={loggingIn}
-                onChange={(e) => handlePinChange(i, e.target.value)}
-                onKeyDown={(e) => handlePinKeyDown(i, e)}
-                autoFocus={i === 0}
-              />
-            ))}
-          </div>
-        </div>
-
-        {error && (
-          <p style={{ color: 'var(--red)', fontSize: '0.8125rem', textAlign: 'center', marginBottom: 16, fontWeight: 500 }}>
             {error}
-          </p>
+          </div>
         )}
 
-        <button
-          type="submit"
-          className="btn btn-primary btn-full"
-          style={{ height: 48, opacity: loggingIn ? 0.7 : 1 }}
-          disabled={loggingIn || loadingStaff || !!backendError}
-        >
-          {loggingIn ? 'Signing in…' : 'Sign In'}
-        </button>
-      </form>
+        {!forceChange ? (
+          <form onSubmit={handleLogin}>
+            <div className="form-group">
+              <label>Email or Username</label>
+              <input
+                type="text"
+                className="form-control"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                placeholder="Enter your email"
+                disabled={loading}
+                autoFocus
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Password</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className="form-control"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  disabled={loading}
+                  style={{ paddingRight: 40 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#666'
+                  }}
+                  title={showPassword ? 'Hide Password' : 'Show Password'}
+                >
+                  {showPassword ? '👁️' : '👁️‍🗨️'}
+                </button>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, fontSize: 13 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, margin: 0, cursor: 'pointer', color: '#555' }}>
+                <input type="checkbox" /> Remember Me
+              </label>
+              <Link to="/forgot-password" style={{ color: 'var(--teal)', textDecoration: 'none', fontWeight: 500 }}>
+                Forgot Password?
+              </Link>
+            </div>
+
+            <button
+              type="submit"
+              className="btn btn-primary btn-full"
+              style={{ height: 48, opacity: loading ? 0.7 : 1 }}
+              disabled={loading}
+            >
+              {loading ? 'Signing in…' : 'Sign In'}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleForceChange}>
+            <p style={{ fontSize: 14, color: '#555', marginBottom: 20, textAlign: 'center' }}>
+              Welcome! For security reasons, you must set a new personal password before continuing.
+            </p>
+
+            <div className="form-group">
+              <label>New Password</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className="form-control"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="At least 8 characters"
+                  disabled={loading}
+                  autoFocus
+                  style={{ paddingRight: 40 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#666'
+                  }}
+                >
+                  {showPassword ? '👁️' : '👁️‍🗨️'}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="btn btn-primary btn-full"
+              style={{ height: 48, opacity: loading ? 0.7 : 1 }}
+              disabled={loading}
+            >
+              {loading ? 'Updating…' : 'Save & Continue'}
+            </button>
+          </form>
+        )}
+      </div>
 
       <style>{`
         @keyframes shake {

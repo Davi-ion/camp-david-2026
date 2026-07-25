@@ -1,30 +1,28 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { usePermissions } from '../hooks/usePermissions';
 
 export default function BottomNav() {
   const { state } = useApp();
+  const { hasPermission } = usePermissions();
   const location = useLocation();
 
   const openIncidents = state.incidents.filter((i) => i.status !== 'resolved').length;
 
   const tabs = [
-    { to: '/', icon: '🏠', label: 'Home' },
-    { to: '/rollcall', icon: '📋', label: 'Roll Call' },
-    { to: '/programme', icon: '📅', label: 'Programme' },
-    { to: '/incidents', icon: '🚨', label: 'Incidents', badge: openIncidents },
-    { to: '/campers', icon: '👥', label: 'Campers' },
-  ];
-
-  if (state.currentUser?.role === 'admin' || state.currentUser?.id === 1) {
-    tabs.push({ to: '/admin', icon: '⚙️', label: 'Admin' });
-  }
+    { to: '/app', icon: '🏠', label: 'Home', show: true },
+    { to: '/app/rollcall', icon: '📋', label: 'Roll Call', show: hasPermission('take:attendance') },
+    { to: '/app/programme', icon: '📅', label: 'Programme', show: hasPermission('view:schedule') },
+    { to: '/app/incidents', icon: '🚨', label: 'Incidents', badge: openIncidents, show: hasPermission('view:incidents') },
+    { to: '/app/campers', icon: '👥', label: 'Campers', show: hasPermission('view:campers') },
+  ].filter(t => t.show);
 
   return (
     <nav className="bottom-nav">
       {tabs.map((tab) => {
         const isActive =
-          tab.to === '/'
-            ? location.pathname === '/'
+          tab.to === '/app'
+            ? location.pathname === '/app'
             : location.pathname.startsWith(tab.to);
 
         return (

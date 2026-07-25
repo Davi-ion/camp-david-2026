@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import TopBar from '../components/TopBar';
 import { useApp } from '../context/AppContext';
+import EmptyState from '../components/EmptyState';
+import ErrorState from '../components/ErrorState';
+import { SkeletonTableRow } from '../components/Skeleton';
 
 const API = 'http://localhost:3001';
 
 const ROLES = {
-  admin:     { label: 'Admin',     color: '#1B6B5A', bg: '#E8F5F1' },
-  team_lead: { label: 'Team Lead', color: '#E07B0A', bg: '#FFF5E6' },
-  staff:     { label: 'Staff',     color: '#2F80ED', bg: '#EBF3FD' },
+  admin:     { label: 'Admin',     color: '#146051', bg: '#E8F5F1' },
+  team_lead: { label: 'Team Lead', color: '#D97304', bg: '#FFF5E6' },
+  staff:     { label: 'Staff',     color: '#2563EB', bg: '#EFF6FF' },
 };
 
 const GROUPS = ['eagles', 'lions', 'flames', 'arrows'];
@@ -125,25 +128,27 @@ export default function Admin() {
     return (
       <div className="page-container">
         <TopBar title="Admin" />
-        <div className="content-container" style={{ paddingTop: 32, textAlign: 'center' }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>🔒</div>
-          <h2 style={{ fontWeight: 600, marginBottom: 8 }}>Access Restricted</h2>
-          <p style={{ color: 'var(--text-muted)' }}>Only admins can view this page.</p>
+        <div className="content-container animate-in">
+          <EmptyState 
+            icon="🔒"
+            title="Access Restricted"
+            description="Only admins can view this page."
+          />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="page-container" style={{ paddingBottom: 80 }}>
+    <div className="page-container">
       <TopBar title="Admin Dashboard" />
 
       {/* Toast */}
       {toastMsg && (
-        <div style={{
-          position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)',
-          background: '#1B6B5A', color: '#fff', padding: '10px 20px', borderRadius: 8,
-          fontWeight: 500, fontSize: 14, zIndex: 9999, boxShadow: '0 4px 12px rgba(0,0,0,.25)'
+        <div className="animate-in" style={{
+          position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)',
+          background: '#111827', color: '#fff', padding: '10px 20px', borderRadius: 100,
+          fontWeight: 500, fontSize: 14, zIndex: 9999, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'
         }}>
           {toastMsg}
         </div>
@@ -151,10 +156,10 @@ export default function Admin() {
 
       <div className="content-container">
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '16px 0 24px' }}>
           <div>
-            <h2 style={{ fontWeight: 700, fontSize: 20, margin: 0 }}>Staff Management</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: '4px 0 0' }}>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '2px' }}>Staff Management</h2>
+            <p className="text-secondary text-sm">
               {staff.length} staff member{staff.length !== 1 ? 's' : ''} registered
             </p>
           </div>
@@ -162,65 +167,66 @@ export default function Admin() {
         </div>
 
         {/* Error state */}
-        {apiError && (
-          <div style={{ background: '#FDE8EA', color: '#DC3545', padding: '12px 16px', borderRadius: 10, marginBottom: 16, fontSize: 14 }}>
-            ⚠️ {apiError}
-          </div>
-        )}
+        {apiError && <ErrorState error={apiError} onRetry={fetchStaff} />}
 
         {/* Table */}
-        {loading ? (
-          <p style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Loading…</p>
-        ) : (
-          <div style={{ overflowX: 'auto', borderRadius: 12, border: '1px solid var(--border)' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', background: 'var(--surface)' }}>
+        {!apiError && (
+          <div className="table-container animate-in">
+            <table className="admin-table">
               <thead>
-                <tr style={{ background: 'var(--surface-alt)', borderBottom: '1px solid var(--border)' }}>
+                <tr>
                   {['Name', 'Role', 'Group', 'Actions'].map(h => (
-                    <th key={h} style={{ padding: '11px 16px', fontWeight: 600, fontSize: 13, color: 'var(--text-muted)' }}>{h}</th>
+                    <th key={h}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {staff.length === 0 && (
+                {loading ? (
+                  <>
+                    <SkeletonTableRow columns={4} />
+                    <SkeletonTableRow columns={4} />
+                    <SkeletonTableRow columns={4} />
+                  </>
+                ) : staff.length === 0 ? (
                   <tr>
-                    <td colSpan={4} style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                      No staff yet — add one above!
+                    <td colSpan={4} style={{ padding: 0 }}>
+                      <EmptyState 
+                        icon="👥"
+                        title="No staff members"
+                        description="Get started by adding your first staff member."
+                      />
                     </td>
                   </tr>
+                ) : (
+                  staff.map((member) => {
+                    const roleInfo = ROLES[member.role] || ROLES.staff;
+                    return (
+                      <tr key={member.id}>
+                        <td className="font-medium">{member.name}</td>
+                        <td>
+                          <span className="badge" style={{ color: roleInfo.color, background: roleInfo.bg }}>
+                            {roleInfo.label}
+                          </span>
+                        </td>
+                        <td style={{ color: member.group ? 'var(--text)' : 'var(--text-muted)', textTransform: 'capitalize' }}>
+                          {member.group || '—'}
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '16px' }}>
+                            <button onClick={() => openModal(member)}
+                              style={{ background: 'none', border: 'none', color: 'var(--teal)', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600 }}>
+                              Edit
+                            </button>
+                            <button onClick={() => handleDelete(member.id, member.name)}
+                              style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600 }}>
+                              Remove
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
-                {staff.map((member, i) => {
-                  const roleInfo = ROLES[member.role] || ROLES.staff;
-                  return (
-                    <tr key={member.id} style={{ borderBottom: i < staff.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                      <td style={{ padding: '12px 16px', fontWeight: 500 }}>{member.name}</td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <span style={{
-                          display: 'inline-block', padding: '3px 10px', borderRadius: 99,
-                          fontSize: 12, fontWeight: 600,
-                          color: roleInfo.color, background: roleInfo.bg,
-                        }}>
-                          {roleInfo.label}
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px 16px', color: member.group ? 'var(--text)' : 'var(--text-muted)', textTransform: 'capitalize' }}>
-                        {member.group || '—'}
-                      </td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <div style={{ display: 'flex', gap: 12 }}>
-                          <button onClick={() => openModal(member)}
-                            style={{ background: 'none', border: 'none', color: 'var(--teal)', cursor: 'pointer', fontSize: 14, fontWeight: 600, padding: 0 }}>
-                            Edit
-                          </button>
-                          <button onClick={() => handleDelete(member.id, member.name)}
-                            style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontSize: 14, fontWeight: 600, padding: 0 }}>
-                            Remove
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
               </tbody>
             </table>
           </div>
@@ -229,63 +235,51 @@ export default function Admin() {
 
       {/* Modal */}
       {showModal && (
-        <div onClick={(e) => e.target === e.currentTarget && setShowModal(false)}
-          style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 1000, padding: 20,
-          }}>
-          <div style={{
-            background: 'var(--surface)', borderRadius: 16, width: '100%', maxWidth: 420,
-            padding: 24, boxShadow: '0 20px 60px rgba(0,0,0,.3)',
-          }}>
-            <h3 style={{ fontWeight: 700, fontSize: 18, marginBottom: 20 }}>
-              {formData.id ? '✏️ Edit Staff Member' : '➕ Add Staff Member'}
-            </h3>
+        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3 style={{ fontSize: '1.25rem' }}>
+                {formData.id ? 'Edit Staff Member' : 'Add Staff Member'}
+              </h3>
+              <button className="modal-close" type="button" onClick={() => setShowModal(false)}>×</button>
+            </div>
 
             <form onSubmit={handleSave}>
-              {/* Name */}
-              <div style={{ marginBottom: 14 }}>
-                <label style={{ display: 'block', fontWeight: 500, fontSize: 13, marginBottom: 6 }}>Full Name *</label>
+              <div className="form-group">
+                <label>Full Name *</label>
                 <input
-                  className="input-field" name="name" required
+                  name="name" required
                   value={formData.name} onChange={handleChange}
                   placeholder="e.g. Tunde Kayode"
-                  style={{ width: '100%', boxSizing: 'border-box' }}
                 />
               </div>
 
-              {/* PIN */}
-              <div style={{ marginBottom: 14 }}>
-                <label style={{ display: 'block', fontWeight: 500, fontSize: 13, marginBottom: 6 }}>
+              <div className="form-group">
+                <label>
                   {formData.id ? 'New PIN (leave blank to keep current)' : 'PIN (4 digits) *'}
                 </label>
                 <input
-                  className="input-field" name="pin" type="password"
+                  name="pin" type="password"
                   inputMode="numeric" maxLength={4}
                   value={formData.pin} onChange={handleChange}
                   placeholder="••••"
-                  style={{ width: '100%', boxSizing: 'border-box', letterSpacing: 6 }}
+                  style={{ letterSpacing: '4px' }}
                 />
               </div>
 
-              {/* Role */}
-              <div style={{ marginBottom: 14 }}>
-                <label style={{ display: 'block', fontWeight: 500, fontSize: 13, marginBottom: 6 }}>Role *</label>
-                <select className="input-field" name="role" value={formData.role} onChange={handleChange}
-                  style={{ width: '100%', boxSizing: 'border-box' }}>
+              <div className="form-group">
+                <label>Role *</label>
+                <select name="role" value={formData.role} onChange={handleChange}>
                   <option value="admin">Admin</option>
                   <option value="team_lead">Team Lead</option>
                   <option value="staff">Staff / Volunteer</option>
                 </select>
               </div>
 
-              {/* Group — only shown if not admin */}
               {formData.role !== 'admin' && (
-                <div style={{ marginBottom: 14 }}>
-                  <label style={{ display: 'block', fontWeight: 500, fontSize: 13, marginBottom: 6 }}>Group</label>
-                  <select className="input-field" name="group" value={formData.group || ''} onChange={handleChange}
-                    style={{ width: '100%', boxSizing: 'border-box' }}>
+                <div className="form-group">
+                  <label>Group</label>
+                  <select name="group" value={formData.group || ''} onChange={handleChange}>
                     <option value="">— No group —</option>
                     {GROUPS.map(g => <option key={g} value={g} style={{ textTransform: 'capitalize' }}>{g.charAt(0).toUpperCase() + g.slice(1)}</option>)}
                   </select>
@@ -293,17 +287,17 @@ export default function Admin() {
               )}
 
               {formError && (
-                <p style={{ color: 'var(--red)', fontSize: 13, marginBottom: 12, fontWeight: 500 }}>⚠️ {formError}</p>
+                <div style={{ background: 'var(--red-bg)', color: 'var(--red)', padding: '12px', borderRadius: '8px', fontSize: '0.875rem', fontWeight: 500, marginBottom: '20px' }}>
+                  {formError}
+                </div>
               )}
 
-              <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
-                <button type="button" onClick={() => setShowModal(false)}
-                  style={{ flex: 1, padding: '11px 0', borderRadius: 10, border: '1px solid var(--border)', background: 'none', fontWeight: 600, cursor: 'pointer' }}>
+              <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
+                <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={() => setShowModal(false)}>
                   Cancel
                 </button>
-                <button type="submit" disabled={saving}
-                  style={{ flex: 1, padding: '11px 0', borderRadius: 10, border: 'none', background: 'var(--teal)', color: '#fff', fontWeight: 600, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
-                  {saving ? 'Saving…' : (formData.id ? 'Save Changes' : 'Add Member')}
+                <button type="submit" className="btn btn-primary" disabled={saving} style={{ flex: 1, opacity: saving ? 0.7 : 1 }}>
+                  {saving ? 'Saving...' : (formData.id ? 'Save Changes' : 'Add Member')}
                 </button>
               </div>
             </form>

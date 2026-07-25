@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
+import { usePermissions } from '../hooks/usePermissions';
 import { GROUPS } from '../data/campers';
 import { staff } from '../data/staff';
 import TopBar from '../components/TopBar';
+import EmptyState from '../components/EmptyState';
 
 const INCIDENT_TYPES = [
   { id: 'medical', label: 'Medical', emoji: '🔴', color: 'var(--red)' },
@@ -23,6 +25,7 @@ function getInitials(name) {
 
 export default function Incidents() {
   const { state, dispatch } = useApp();
+  const { hasPermission, isAdmin } = usePermissions();
   const user = state.currentUser;
 
   const [statusFilter, setStatusFilter] = useState('all');
@@ -33,18 +36,20 @@ export default function Incidents() {
 
   // Visible campers for the form selector
   const selectableCampers = useMemo(() => {
-    if (user?.role === 'admin') return state.campers;
+    if (isAdmin || hasPermission('view:campers')) return state.campers;
     return state.campers.filter((c) => c.group === user?.group);
-  }, [state.campers, user]);
+  }, [state.campers, user, isAdmin, hasPermission]);
 
   // Filter incidents by role
   const visibleIncidents = useMemo(() => {
     let list = state.incidents;
-    if (user?.role === 'staff') {
-      list = list.filter((i) => i.reportedBy === user.id);
-    } else if (user?.role === 'team_lead') {
-      const groupCamperIds = state.campers.filter((c) => c.group === user.group).map((c) => c.id);
-      list = list.filter((i) => groupCamperIds.includes(i.camperId) || i.reportedBy === user.id);
+    if (!isAdmin && !hasPermission('view:incidents')) {
+      // Very basic fallback
+      list = list.filter((i) => i.reportedBy === user?.id);
+    } else if (!isAdmin && hasPermission('view:incidents') && !hasPermission('manage:users')) {
+      // E.g. Platoon leader or similar
+      const groupCamperIds = state.campers.filter((c) => c.group === user?.group).map((c) => c.id);
+      list = list.filter((i) => groupCamperIds.includes(i.camperId) || i.reportedBy === user?.id);
     }
     // Status filter
     if (statusFilter !== 'all') {
@@ -75,7 +80,7 @@ export default function Incidents() {
     dispatch({ type: 'UPDATE_INCIDENT_STATUS', payload: { id: incidentId, status: newStatus } });
   };
 
-  const canUpdateStatus = user?.role === 'admin' || user?.role === 'team_lead';
+  const canUpdateStatus = hasPermission('resolve:incidents');
 
   return (
     <div className="page page-with-topbar">
@@ -156,12 +161,11 @@ export default function Incidents() {
 
         {/* Incidents List */}
         {visibleIncidents.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-state-icon">✅</div>
-            <div className="empty-state-text">
-              {statusFilter === 'all' ? 'No incidents reported' : `No ${statusFilter.replace('_', ' ')} incidents`}
-            </div>
-          </div>
+          <EmptyState 
+            icon="✅"
+            title={statusFilter === 'all' ? 'No incidents reported' : `No ${statusFilter.replace('_', ' ')} incidents`}
+            description="You're all caught up."
+          />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {visibleIncidents.map((inc) => {

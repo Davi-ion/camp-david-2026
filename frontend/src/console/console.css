@@ -1,0 +1,765 @@
+/* =============================================
+   Camp David 2026 — Admin Console Design System
+   Desktop-first. Enterprise aesthetic.
+   ============================================= */
+
+/* ---------- Console Layout Tokens ---------- */
+:root {
+  --console-sidebar-width: 256px;
+  --console-topnav-height: 60px;
+  --console-sidebar-bg: #0D1117;
+  --console-sidebar-border: rgba(255,255,255,0.06);
+  --console-sidebar-text: rgba(255,255,255,0.55);
+  --console-sidebar-text-hover: rgba(255,255,255,0.9);
+  --console-sidebar-active-bg: rgba(255,255,255,0.08);
+  --console-sidebar-active-text: #fff;
+  --console-sidebar-accent: #1B7865;
+  --console-topnav-bg: #ffffff;
+  --console-topnav-border: #E5E7EB;
+  --console-content-bg: #F4F6F8;
+}
+
+/* ---------- Console Root Layout ---------- */
+.console-root {
+  display: flex;
+  min-height: 100dvh;
+  background: var(--console-content-bg);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ---------- Sidebar ---------- */
+.console-sidebar {
+  width: var(--console-sidebar-width);
+  min-height: 100dvh;
+  background: var(--console-sidebar-bg);
+  border-right: 1px solid var(--console-sidebar-border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 50;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.console-sidebar::-webkit-scrollbar { width: 4px; }
+.console-sidebar::-webkit-scrollbar-track { background: transparent; }
+.console-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+/* Sidebar Brand */
+.console-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--console-sidebar-border);
+  flex-shrink: 0;
+}
+
+.console-brand-logo {
+  width: 36px;
+  height: 36px;
+  background: var(--console-sidebar-accent);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  flex-shrink: 0;
+}
+
+.console-brand-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.console-brand-sub {
+  font-size: 0.6875rem;
+  color: var(--console-sidebar-text);
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+/* Sidebar Nav */
+.console-nav {
+  flex: 1;
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.console-nav-section {
+  padding: 8px 12px 4px;
+}
+
+.console-nav-section-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  padding: 0 8px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.console-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--console-sidebar-text);
+  text-decoration: none;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  position: relative;
+}
+
+.console-nav-item:hover {
+  background: var(--console-sidebar-active-bg);
+  color: var(--console-sidebar-text-hover);
+}
+
+.console-nav-item.active {
+  background: var(--console-sidebar-active-bg);
+  color: var(--console-sidebar-active-text);
+  font-weight: 600;
+}
+
+.console-nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  background: var(--console-sidebar-accent);
+  border-radius: 0 2px 2px 0;
+}
+
+.console-nav-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.console-nav-item.active .console-nav-icon,
+.console-nav-item:hover .console-nav-icon {
+  opacity: 1;
+}
+
+.console-nav-badge {
+  margin-left: auto;
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.6);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 100px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.console-nav-badge.urgent {
+  background: rgba(220,53,69,0.3);
+  color: #ff6b6b;
+}
+
+.console-nav-divider {
+  height: 1px;
+  background: var(--console-sidebar-border);
+  margin: 8px 12px;
+}
+
+/* Sidebar Footer */
+.console-sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid var(--console-sidebar-border);
+  flex-shrink: 0;
+}
+
+.console-portal-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  text-decoration: none;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.console-portal-switch:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.12);
+}
+
+.console-portal-switch-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+}
+
+.console-portal-switch-sub {
+  font-size: 0.6875rem;
+  color: rgba(255,255,255,0.3);
+}
+
+/* ---------- Console Main Area ---------- */
+.console-main {
+  margin-left: var(--console-sidebar-width);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* ---------- Console TopNav ---------- */
+.console-topnav {
+  height: var(--console-topnav-height);
+  background: var(--console-topnav-bg);
+  border-bottom: 1px solid var(--console-topnav-border);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+/* Breadcrumb */
+.console-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  flex: 1;
+}
+
+.console-breadcrumb-item {
+  color: var(--text-muted);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.console-breadcrumb-item:hover { color: var(--text); }
+
+.console-breadcrumb-item.current {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.console-breadcrumb-sep {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  user-select: none;
+}
+
+/* Global Search */
+.console-search {
+  position: relative;
+  width: 280px;
+}
+
+.console-search-input {
+  width: 100%;
+  height: 36px;
+  padding: 0 14px 0 38px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  color: var(--text);
+  transition: all 0.2s ease;
+  box-shadow: none;
+}
+
+.console-search-input:focus {
+  border-color: var(--teal);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(27,107,90,0.1);
+}
+
+.console-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  pointer-events: none;
+}
+
+/* TopNav Actions */
+.console-topnav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.console-notif-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.console-notif-btn:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.console-notif-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  background: var(--red);
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+/* User chip */
+.console-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 4px 6px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.console-user-chip:hover {
+  border-color: #D1D5DB;
+  background: #fff;
+}
+
+.console-user-chip-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.console-user-chip-role {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ---------- Console Content ---------- */
+.console-content {
+  flex: 1;
+  padding: 28px;
+  overflow-y: auto;
+  max-width: 1440px;
+  width: 100%;
+}
+
+/* ---------- Console Page Header ---------- */
+.console-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px;
+}
+
+.console-page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.console-page-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+/* ---------- KPI Grid ---------- */
+.console-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 1200px) {
+  .console-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.console-kpi-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  transition: box-shadow 0.15s ease;
+}
+
+.console-kpi-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.console-kpi-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.console-kpi-value {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin: 6px 0 4px;
+}
+
+.console-kpi-value.teal { color: var(--teal); }
+.console-kpi-value.orange { color: var(--orange); }
+.console-kpi-value.red { color: var(--red); }
+.console-kpi-value.blue { color: var(--blue); }
+
+.console-kpi-delta {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.console-kpi-delta.positive { color: #16A34A; }
+.console-kpi-delta.negative { color: var(--red); }
+
+/* ---------- Console 2-col Layout ---------- */
+.console-two-col {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .console-two-col { grid-template-columns: 1fr; }
+}
+
+/* ---------- Console Cards ---------- */
+.console-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  overflow: hidden;
+}
+
+.console-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.console-card-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.console-card-action {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--teal);
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.console-card-action:hover { opacity: 0.7; }
+
+.console-card-body {
+  padding: 20px 24px;
+}
+
+/* ---------- Activity Feed ---------- */
+.console-activity-item {
+  display: flex;
+  gap: 14px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border-light);
+  transition: background 0.15s ease;
+}
+
+.console-activity-item:last-child { border-bottom: none; }
+.console-activity-item:hover { background: var(--bg); }
+
+.console-activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  flex-shrink: 0;
+  margin-top: 7px;
+}
+
+.console-activity-dot.teal { background: var(--teal); }
+.console-activity-dot.orange { background: var(--orange); }
+.console-activity-dot.red { background: var(--red); }
+.console-activity-dot.blue { background: var(--blue); }
+
+.console-activity-text {
+  font-size: 0.8125rem;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.console-activity-time {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ---------- Platoon Occupancy Bar ---------- */
+.console-platoon-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.console-platoon-row:last-child { border-bottom: none; }
+
+.console-platoon-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text);
+  min-width: 80px;
+}
+
+.console-platoon-bar-track {
+  flex: 1;
+  height: 8px;
+  background: var(--border-light);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.console-platoon-bar-fill {
+  height: 100%;
+  border-radius: 100px;
+  background: var(--teal);
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.console-platoon-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 36px;
+  text-align: right;
+}
+
+/* ---------- Upcoming Sessions ---------- */
+.console-session-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.console-session-item:last-child { border-bottom: none; }
+
+.console-session-time {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text);
+  min-width: 52px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.console-session-time span {
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.console-session-info { flex: 1; }
+
+.console-session-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.console-session-loc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.console-session-badge {
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: var(--teal-bg);
+  color: var(--teal);
+}
+
+.console-session-badge.now {
+  background: var(--teal);
+  color: #fff;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+
+/* ---------- Access Denied Page ---------- */
+.console-denied {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+}
+
+.console-denied-card {
+  text-align: center;
+  max-width: 400px;
+  padding: 48px 40px;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+}
+
+/* ---------- Coming Soon / Placeholder ---------- */
+.console-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 360px;
+  text-align: center;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+}
+
+.console-placeholder-icon {
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+
+.console-placeholder-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.console-placeholder-text {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  max-width: 300px;
+}
+
+/* ---------- Console Table Overrides ---------- */
+.console-table-container {
+  overflow-x: auto;
+  border-radius: 0;
+}
+
+.console-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.console-table th {
+  padding: 12px 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.console-table td {
+  padding: 14px 20px;
+  font-size: 0.875rem;
+  color: var(--text);
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+}
+
+.console-table tbody tr:last-child td { border-bottom: none; }
+.console-table tbody tr:hover td { background: var(--bg); }
+
+/* ---------- Micro-animations ---------- */
+.console-fade-in {
+  animation: consoleFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes consoleFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}

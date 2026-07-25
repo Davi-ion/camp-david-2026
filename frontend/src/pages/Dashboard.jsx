@@ -5,6 +5,7 @@ import { CAMP_DAYS, schedule } from '../data/schedule';
 import { sessions } from '../data/sessions';
 import { staff } from '../data/staff';
 import { GROUPS } from '../data/campers';
+import UserMenu from '../components/UserMenu';
 
 function getInitials(name) {
   return name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
@@ -113,47 +114,40 @@ export default function Dashboard() {
     <div className="page">
       {/* Dashboard Header */}
       <div className="dash-header">
-        <div className="dash-header-top">
-          <div className="dash-brand">
-            <div className="dash-logo">⛺</div>
-            Camp David 2026
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <button
-              className="btn-icon"
-              style={{ color: '#fff', background: 'rgba(255,255,255,0.15)', width: 36, height: 36 }}
-              title="Notifications"
-            >
-              🔔
-            </button>
-            <div className="avatar avatar-sm" style={{ background: 'rgba(255,255,255,0.2)' }}>
-              {getInitials(user?.name || 'S')}
+        <div className="container">
+          <div className="dash-header-top">
+            <div className="dash-brand">
+              <div className="dash-logo">⛺</div>
+              Camp David 2026
             </div>
+            <UserMenu lightMode={true} />
           </div>
+
+          <p className="dash-greeting">{greeting},</p>
+          <h1 className="dash-name">{user?.name || 'Staff Member'}</h1>
+
+          <div className="dash-day-strip">
+            <span className="dash-day-badge">DAY {campDay.dayNum} OF 5</span>
+            <span>{campDay.full} · {timeStr}</span>
+          </div>
+
+          {/* Happening Now */}
+          {current && (
+            <div className="now-card">
+              <div className="now-card-label">
+                <span className="now-dot" />
+                HAPPENING NOW
+              </div>
+              <div className="now-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="now-card-title">{current.title}</div>
+                <div className="now-card-time">
+                  {current.time} – {current.end}
+                </div>
+              </div>
+              <div className="now-card-meta">{current.location} · All Groups</div>
+            </div>
+          )}
         </div>
-
-        <p className="dash-greeting">{greeting},</p>
-        <h1 className="dash-name">{user?.name || 'Staff Member'}</h1>
-
-        <div className="dash-day-strip">
-          <span className="dash-day-badge">DAY {campDay.dayNum} OF 5</span>
-          <span>{campDay.full} · {timeStr}</span>
-        </div>
-
-        {/* Happening Now */}
-        {current && (
-          <div className="now-card">
-            <div className="now-card-label">
-              <span className="now-dot" />
-              HAPPENING NOW
-            </div>
-            <div className="now-card-time">
-              {current.time} – {current.end}
-            </div>
-            <div className="now-card-title">{current.title}</div>
-            <div className="now-card-meta">{current.location} · All Groups</div>
-          </div>
-        )}
       </div>
 
       <div className="container">
@@ -178,7 +172,7 @@ export default function Dashboard() {
           <>
             <div className="section-header">
               <span className="section-title">Up Next</span>
-              <Link to="/programme" className="section-link">Full Schedule</Link>
+              <Link to="/app/programme" className="section-link">Full Schedule</Link>
             </div>
             <div className="upnext-card">
               <div className="upnext-time">
@@ -201,7 +195,7 @@ export default function Dashboard() {
         {/* Announcements */}
         <div className="section-header">
           <span className="section-title">Announcements</span>
-          <Link to="/programme" className="section-link">See All</Link>
+          <Link to="/app/programme" className="section-link">See All</Link>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {latestAnn.length === 0 ? (
@@ -231,11 +225,11 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <div className="quick-actions">
-          <button className="quick-action-btn" onClick={() => navigate('/rollcall')}>
+          <button className="quick-action-btn" onClick={() => navigate('/app/rollcall')}>
             <div className="quick-action-icon teal">📋</div>
             Take Roll Call
           </button>
-          <button className="quick-action-btn" onClick={() => navigate('/incidents')}>
+          <button className="quick-action-btn" onClick={() => navigate('/app/incidents')}>
             <div className="quick-action-icon orange">🚨</div>
             Report Incident
           </button>

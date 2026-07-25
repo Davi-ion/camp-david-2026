@@ -1,7 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// This is your Prisma schema file
+// Camp David 2026 — Phase 2: Enterprise Auth & RBAC
 
 generator client {
   provider = "prisma-client"
@@ -12,12 +10,100 @@ datasource db {
   provider = "sqlite"
 }
 
+// ─── Staff / Users ───────────────────────────────────────────────
 model Staff {
+  id                  String    @id @default(cuid())
+  name                String
+  email               String?   @unique
+  username            String?   @unique
+  passwordHash        String?
+  pin                 String?   // Kept for backward compat during migration
+  role                String    @default("staff")
+  department          String?
+  group               String?   // platoon assignment
+  phone               String?
+  gender              String?
+  avatar              String?   // URL or base64
+  bio                 String?
+  address             String?
+  emergencyContact    String?   // JSON string: { name, phone, relationship }
+  status              String    @default("active") // active | suspended | inactive
+  forcePasswordChange Boolean   @default(true)
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+  lastLoginAt         DateTime?
+  createdBy           String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  // Relations
+  roleAssignment      RoleAssignment?
+  auditLogs           AuditLog[]       @relation("UserAuditLogs")
+  notifications       Notification[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+// ─── Roles ────────────────────────────────────────────────────────
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  permissions String   @default("[]") // JSON array of permission strings
+  isSystem    Boolean  @default(false) // system roles cannot be deleted
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assignments RoleAssignment[]
+}
+
+model RoleAssignment {
   id        String   @id @default(cuid())
-  name      String
-  pin       String
-  role      String   @default("staff")
-  group     String?
+  staffId   String   @unique
+  roleId    String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+  staff Staff @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  role  Role  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+}
+
+// ─── Audit Log ───────────────────────────────────────────────────
+model AuditLog {
+  id           String   @id @default(cuid())
+  userId       String
+  userName     String
+  action       String   // e.g. "LOGIN", "CREATE_USER", "UPDATE_ATTENDANCE"
+  targetType   String?  // e.g. "Staff", "Camper", "Incident"
+  targetId     String?
+  targetName   String?
+  detail       String?
+  ipAddress    String?
+  createdAt    DateTime @default(now())
+
+  user Staff @relation("UserAuditLogs", fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Notifications ───────────────────────────────────────────────
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("info") // info | success | warning | urgent
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  user Staff @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Password Reset Tokens ────────────────────────────────────────
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user Staff @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

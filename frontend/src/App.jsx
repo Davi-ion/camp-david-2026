@@ -22,6 +22,7 @@ import ConsoleCampers from './console/ConsoleCampers';
 import ConsolePlatoons from './console/ConsolePlatoons';
 import ConsoleStaff from './console/ConsoleStaff';
 import ConsoleProgramme from './console/ConsoleProgramme';
+import ConsoleDrills from './console/ConsoleDrills';
 import ConsoleAttendance from './console/ConsoleAttendance';
 import ConsoleAnnouncements from './console/ConsoleAnnouncements';
 import ConsoleReports from './console/ConsoleReports';
@@ -121,6 +122,7 @@ function App() {
           <Route path="attendance" element={<ConsoleAttendance />} />
           <Route path="staff" element={<ConsoleStaff />} />
           <Route path="programme" element={<ConsoleProgramme />} />
+          <Route path="drills" element={<ConsoleDrills />} />
           <Route path="activity" element={<ConsoleActivity />} />
           <Route path="settings" element={<ConsoleSettings />} />
           <Route path="announcements" element={<ConsoleAnnouncements />} />

@@ -18,6 +18,7 @@ import incidentsRoutes from './routes/incidents.js';
 import announcementsRoutes from './routes/announcements.js';
 import settingsRoutes from './routes/settings.js';
 import reportsRoutes from './routes/reports.js';
+import drillsRoutes from './routes/drills.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = path.join(__dirname, 'dev.db');
@@ -51,6 +52,7 @@ app.use('/api/incidents', incidentsRoutes);
 app.use('/api/announcements', announcementsRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/reports', reportsRoutes);
+app.use('/api/drills', drillsRoutes);
 
 // ─── Global Search ────────────────────────────────────────────────
 app.get('/api/search', async (req, res) => {

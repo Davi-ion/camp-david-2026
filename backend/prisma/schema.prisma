@@ -48,6 +48,10 @@ model Staff {
   assignedIncidents   Incident[]        @relation("IncidentAssignedStaff")
   reportedIncidents   Incident[]        @relation("IncidentReporter")
   counselledCampers   Camper[]          @relation("CounsellorCampers")
+
+  // Phase 6 Drills
+  assignedDrills      CampDrill[]       @relation("AssignedDrills")
+  backupDrills        CampDrill[]       @relation("BackupDrills")
 }
 
 // ─── Platoons ─────────────────────────────────────────────────────
@@ -65,6 +69,7 @@ model Platoon {
   leader  Staff?   @relation("PlatoonLeader", fields: [leaderId], references: [id])
   staff   Staff[]  @relation("PlatoonStaff")
   campers Camper[]
+  drills  CampDrill[] @relation("PlatoonDrills")
 }
 
 // ─── Campers ─────────────────────────────────────────────────────
@@ -212,4 +217,45 @@ model PasswordResetToken {
   createdAt DateTime  @default(now())
 
   user Staff @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Phase 6: Camp Drills ─────────────────────────────────────────
+
+model CampDrill {
+  id                String   @id @default(cuid())
+  name              String
+  category          String   @default("General")
+  description       String?
+  assignedStaffId   String?
+  backupStaffId     String?
+  sessionId         String?  // Links to static schedule key, e.g. "wed-morning-devotion"
+  platoonId         String?
+  department        String?
+  date              String?  // e.g., "2026-07-29"
+  startTime         String?  // "09:00"
+  endTime           String?
+  venue             String?
+  priority          String   @default("medium") // low, medium, high, critical
+  status            String   @default("upcoming") // upcoming, in_progress, completed, cancelled, overdue
+  instructions      String?
+  requiredEquipment String?
+  notes             String?
+  completionNotes   String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  assignedStaff     Staff?   @relation("AssignedDrills", fields: [assignedStaffId], references: [id])
+  backupStaff       Staff?   @relation("BackupDrills", fields: [backupStaffId], references: [id])
+  platoon           Platoon? @relation("PlatoonDrills", fields: [platoonId], references: [id])
+  checklist         DrillChecklistItem[]
+}
+
+model DrillChecklistItem {
+  id          String   @id @default(cuid())
+  drillId     String
+  text        String
+  isCompleted Boolean  @default(false)
+  completedAt DateTime?
+
+  drill       CampDrill @relation(fields: [drillId], references: [id], onDelete: Cascade)
 }

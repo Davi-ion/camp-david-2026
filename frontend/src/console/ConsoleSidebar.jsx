@@ -17,6 +17,7 @@ const NAV_SECTIONS = [
       { to: '/console/attendance',  label: 'Attendance',  icon: '📋' },
       { to: '/console/incidents',   label: 'Incidents',   icon: '🚨', badgeKey: 'openIncidents' },
       { to: '/console/programme',   label: 'Programme',   icon: '📅' },
+      { to: '/console/drills',      label: 'Camp Drills', icon: '📋' },
       { to: '/console/announcements', label: 'Announcements', icon: '📢' },
     ],
   },

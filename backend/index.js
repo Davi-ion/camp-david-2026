@@ -12,6 +12,12 @@ import authRoutes from './routes/auth.js';
 import usersRoutes from './routes/users.js';
 import rolesRoutes from './routes/roles.js';
 import auditRoutes from './routes/audit.js';
+import campersRoutes from './routes/campers.js';
+import platoonsRoutes from './routes/platoons.js';
+import incidentsRoutes from './routes/incidents.js';
+import announcementsRoutes from './routes/announcements.js';
+import settingsRoutes from './routes/settings.js';
+import reportsRoutes from './routes/reports.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = path.join(__dirname, 'dev.db');
@@ -39,6 +45,38 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/roles', rolesRoutes);
 app.use('/api/audit', auditRoutes);
+app.use('/api/campers', campersRoutes);
+app.use('/api/platoons', platoonsRoutes);
+app.use('/api/incidents', incidentsRoutes);
+app.use('/api/announcements', announcementsRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/reports', reportsRoutes);
+
+// ─── Global Search ────────────────────────────────────────────────
+app.get('/api/search', async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.length < 2) return res.json({ campers: [], staff: [] });
+    const [campers, staff] = await Promise.all([
+      prisma.camper.findMany({
+        where: { status: 'active', OR: [{ name: { contains: q } }, { registrationNumber: { contains: q } }] },
+        select: { id: true, name: true, registrationNumber: true, platoon: { select: { name: true, emoji: true } } },
+        take: 5,
+      }),
+      prisma.staff.findMany({
+        where: { status: 'active', OR: [{ name: { contains: q } }, { email: { contains: q } }, { username: { contains: q } }] },
+        select: { id: true, name: true, email: true, role: true, department: true },
+        take: 5,
+      }),
+    ]);
+    res.json({ campers, staff });
+  } catch (err) {
+    res.status(500).json({ error: 'Search failed' });
+  }
+});
+
+// ─── Health check ─────────────────────────────────────────────────
+app.get('/api/health', (req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
 
 // ─── Legacy: Keep staff endpoint for backward compat ─────────────
 app.get('/api/staff', async (req, res) => {

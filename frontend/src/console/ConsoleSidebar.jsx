@@ -5,33 +5,35 @@ const NAV_SECTIONS = [
   {
     label: 'Overview',
     items: [
-      { to: '/console', label: 'Dashboard', icon: '⬛', exact: true },
-      { to: '/console/activity', label: 'Activity Feed', icon: '📡', soon: true },
+      { to: '/console',          label: 'Dashboard',    icon: '⬛', exact: true },
+      { to: '/console/activity', label: 'Activity Feed', icon: '📡' },
     ],
   },
   {
     label: 'Camp Operations',
     items: [
-      { to: '/console/campers', label: 'Campers', icon: '👥', soon: true },
-      { to: '/console/platoons', label: 'Platoons', icon: '🏴', soon: true },
-      { to: '/console/attendance', label: 'Attendance', icon: '📋', soon: true },
-      { to: '/console/incidents', label: 'Incidents', icon: '🚨', badgeKey: 'openIncidents' },
-      { to: '/console/programme', label: 'Programme', icon: '📅', soon: true },
+      { to: '/console/campers',     label: 'Campers',     icon: '👥', badgeKey: 'totalCampers' },
+      { to: '/console/platoons',    label: 'Platoons',    icon: '🏴' },
+      { to: '/console/attendance',  label: 'Attendance',  icon: '📋' },
+      { to: '/console/incidents',   label: 'Incidents',   icon: '🚨', badgeKey: 'openIncidents' },
+      { to: '/console/programme',   label: 'Programme',   icon: '📅' },
+      { to: '/console/announcements', label: 'Announcements', icon: '📢' },
     ],
   },
   {
     label: 'Administration',
     items: [
-      { to: '/console/staff', label: 'Staff', icon: '👤', soon: true },
-      { to: '/console/users', label: 'User Management', icon: '⚙️' },
-      { to: '/console/roles', label: 'Roles & Permissions', icon: '🔐' },
-      { to: '/console/audit', label: 'Audit Logs', icon: '📜' },
+      { to: '/console/staff',    label: 'Staff',              icon: '👤' },
+      { to: '/console/users',    label: 'User Management',    icon: '⚙️' },
+      { to: '/console/roles',    label: 'Roles & Permissions', icon: '🔐' },
+      { to: '/console/reports',  label: 'Reports',            icon: '📊' },
+      { to: '/console/audit',    label: 'Audit Logs',         icon: '📜' },
     ],
   },
   {
     label: 'Settings',
     items: [
-      { to: '/console/settings', label: 'Settings', icon: '🔧', soon: true },
+      { to: '/console/settings', label: 'Settings', icon: '🔧' },
     ],
   },
 ];
@@ -41,9 +43,11 @@ export default function ConsoleSidebar() {
   const location = useLocation();
 
   const openIncidents = state.incidents?.filter(i => i.status !== 'resolved').length || 0;
+  const totalCampers  = state.campers?.length || 0;
 
   const getBadge = (key) => {
     if (key === 'openIncidents') return openIncidents > 0 ? openIncidents : null;
+    if (key === 'totalCampers')  return totalCampers  > 0 ? totalCampers  : null;
     return null;
   };
 
@@ -69,30 +73,16 @@ export default function ConsoleSidebar() {
           <div key={section.label} className="console-nav-section">
             <span className="console-nav-section-label">{section.label}</span>
             {section.items.map((item) => {
-              const badge = item.badgeKey ? getBadge(item.badgeKey) : null;
+              const badge  = item.badgeKey ? getBadge(item.badgeKey) : null;
               const active = isActive(item);
-
               return (
                 <NavLink
                   key={item.to}
-                  to={item.soon ? '#' : item.to}
-                  onClick={item.soon ? (e) => e.preventDefault() : undefined}
+                  to={item.to}
                   className={`console-nav-item${active ? ' active' : ''}`}
-                  style={item.soon ? { opacity: 0.4, cursor: 'default' } : {}}
-                  title={item.soon ? `${item.label} — Coming Soon` : item.label}
                 >
                   <span className="console-nav-icon">{item.icon}</span>
                   <span style={{ flex: 1 }}>{item.label}</span>
-                  {item.soon && (
-                    <span style={{
-                      fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.06em',
-                      textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)',
-                      background: 'rgba(255,255,255,0.06)',
-                      padding: '2px 6px', borderRadius: 4
-                    }}>
-                      Soon
-                    </span>
-                  )}
                   {badge !== null && (
                     <span className={`console-nav-badge${badge > 0 ? ' urgent' : ''}`}>
                       {badge}
@@ -105,7 +95,7 @@ export default function ConsoleSidebar() {
         ))}
       </nav>
 
-      {/* Sidebar Footer — Portal switcher */}
+      {/* Sidebar Footer */}
       <div className="console-sidebar-footer">
         <Link to="/app" className="console-portal-switch">
           <span style={{ fontSize: '1.25rem' }}>📱</span>

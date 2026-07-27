@@ -1,5 +1,4 @@
-// This is your Prisma schema file
-// Camp David 2026 — Phase 2: Enterprise Auth & RBAC
+// Camp David 2026 — Phase 3: Full Camp Management System
 
 generator client {
   provider = "prisma-client"
@@ -17,17 +16,18 @@ model Staff {
   email               String?   @unique
   username            String?   @unique
   passwordHash        String?
-  pin                 String?   // Kept for backward compat during migration
+  pin                 String?
   role                String    @default("staff")
   department          String?
-  group               String?   // platoon assignment
+  group               String?   // legacy platoon assignment string
+  platoonId           String?   // FK to Platoon model
   phone               String?
   gender              String?
-  avatar              String?   // URL or base64
+  avatar              String?
   bio                 String?
   address             String?
-  emergencyContact    String?   // JSON string: { name, phone, relationship }
-  status              String    @default("active") // active | suspended | inactive
+  emergencyContact    String?   // JSON: { name, phone, relationship }
+  status              String    @default("active")
   forcePasswordChange Boolean   @default(true)
   failedLoginAttempts Int       @default(0)
   lockedUntil         DateTime?
@@ -37,10 +37,108 @@ model Staff {
   updatedAt           DateTime  @updatedAt
 
   // Relations
+  platoon             Platoon?          @relation("PlatoonStaff", fields: [platoonId], references: [id])
+  ledPlatoons         Platoon[]         @relation("PlatoonLeader")
   roleAssignment      RoleAssignment?
-  auditLogs           AuditLog[]       @relation("UserAuditLogs")
+  auditLogs           AuditLog[]        @relation("UserAuditLogs")
   notifications       Notification[]
   passwordResetTokens PasswordResetToken[]
+  assignedIncidents   Incident[]        @relation("IncidentAssignedStaff")
+  reportedIncidents   Incident[]        @relation("IncidentReporter")
+}
+
+// ─── Platoons ─────────────────────────────────────────────────────
+model Platoon {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  emoji       String   @default("🏴")
+  description String?
+  leaderId    String?
+  colorHex    String?  @default("#1B7865")
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  leader  Staff?   @relation("PlatoonLeader", fields: [leaderId], references: [id])
+  staff   Staff[]  @relation("PlatoonStaff")
+  campers Camper[]
+}
+
+// ─── Campers ─────────────────────────────────────────────────────
+model Camper {
+  id                 String    @id @default(cuid())
+  registrationNumber String?   @unique
+  name               String
+  dateOfBirth        String?
+  age                Int?
+  gender             String?
+  photo              String?   // URL or base64
+  platoonId          String?
+  medicalNotes       String?
+  allergies          String?
+  medications        String?
+  bloodGroup         String?
+  emergencyContact   String?   // JSON: { name, phone, relationship }
+  guardianName       String?
+  guardianPhone      String?
+  guardianEmail      String?
+  guardianRelation   String?
+  address            String?
+  notes              String?
+  status             String    @default("active") // active | inactive | transferred
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  platoon  Platoon?   @relation(fields: [platoonId], references: [id])
+  incidents Incident[] @relation("IncidentCamper")
+}
+
+// ─── Incidents ────────────────────────────────────────────────────
+model Incident {
+  id             String    @id @default(cuid())
+  title          String
+  description    String
+  category       String    @default("other") // medical | behaviour | security | safety | lost_property | other
+  severity       String    @default("low")   // low | medium | high | critical
+  status         String    @default("open")  // open | in_progress | resolved | closed
+  camperId       String?
+  assignedStaffId String?
+  reportedById   String?
+  location       String?
+  resolution     String?
+  followUp       String?
+  reportedAt     DateTime  @default(now())
+  resolvedAt     DateTime?
+  updatedAt      DateTime  @updatedAt
+
+  camper        Camper? @relation("IncidentCamper", fields: [camperId], references: [id])
+  assignedStaff Staff?  @relation("IncidentAssignedStaff", fields: [assignedStaffId], references: [id])
+  reportedBy    Staff?  @relation("IncidentReporter", fields: [reportedById], references: [id])
+}
+
+// ─── Announcements ────────────────────────────────────────────────
+model Announcement {
+  id          String    @id @default(cuid())
+  title       String
+  body        String
+  urgent      Boolean   @default(false)
+  pinned      Boolean   @default(false)
+  archived    Boolean   @default(false)
+  targetType  String    @default("all") // all | platoon | role | individual
+  targetId    String?   // platoonId or roleId or staffId
+  scheduledAt DateTime?
+  authorId    String?
+  authorName  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// ─── Camp Settings ────────────────────────────────────────────────
+model CampSettings {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
 }
 
 // ─── Roles ────────────────────────────────────────────────────────
@@ -48,8 +146,8 @@ model Role {
   id          String   @id @default(cuid())
   name        String   @unique
   description String?
-  permissions String   @default("[]") // JSON array of permission strings
-  isSystem    Boolean  @default(false) // system roles cannot be deleted
+  permissions String   @default("[]")
+  isSystem    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -71,8 +169,8 @@ model AuditLog {
   id           String   @id @default(cuid())
   userId       String
   userName     String
-  action       String   // e.g. "LOGIN", "CREATE_USER", "UPDATE_ATTENDANCE"
-  targetType   String?  // e.g. "Staff", "Camper", "Incident"
+  action       String
+  targetType   String?
   targetId     String?
   targetName   String?
   detail       String?
@@ -88,7 +186,7 @@ model Notification {
   userId    String
   title     String
   message   String
-  type      String   @default("info") // info | success | warning | urgent
+  type      String   @default("info")
   isRead    Boolean  @default(false)
   link      String?
   createdAt DateTime @default(now())

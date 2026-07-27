@@ -92,6 +92,9 @@ function reducer(state, action) {
     case 'ADD_ANNOUNCEMENT':
       return { ...state, announcements: [action.payload, ...state.announcements] };
 
+    case 'SET_CAMPERS':
+      return { ...state, campers: action.payload };
+
     case 'ADD_CAMPERS':
       return { ...state, campers: [...state.campers, ...action.payload] };
 

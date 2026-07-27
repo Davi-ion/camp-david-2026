@@ -18,7 +18,15 @@ import Profile from './pages/Profile';
 import ConsoleLayout from './console/ConsoleLayout';
 import ConsoleDashboard from './console/ConsoleDashboard';
 import ConsoleIncidents from './console/ConsoleIncidents';
-import ConsoleComingSoon from './console/ConsoleComingSoon';
+import ConsoleCampers from './console/ConsoleCampers';
+import ConsolePlatoons from './console/ConsolePlatoons';
+import ConsoleStaff from './console/ConsoleStaff';
+import ConsoleProgramme from './console/ConsoleProgramme';
+import ConsoleAttendance from './console/ConsoleAttendance';
+import ConsoleAnnouncements from './console/ConsoleAnnouncements';
+import ConsoleReports from './console/ConsoleReports';
+import ConsoleSettings from './console/ConsoleSettings';
+import ConsoleActivity from './console/ConsoleActivity';
 import { ConsoleUserManagement, ConsoleRoleManagement, ConsoleAuditLog } from './console/ConsoleAdminPages';
 
 // Permissions that qualify a user for the Admin Console
@@ -107,14 +115,16 @@ function App() {
           <Route path="roles" element={<ConsoleRoleManagement />} />
           <Route path="audit" element={<ConsoleAuditLog />} />
 
-          {/* Placeholder pages for future modules */}
-          <Route path="campers" element={<ConsoleComingSoon title="Campers" description="Full camper registry with profiles, medical records, and group assignments. Coming in the next phase." />} />
-          <Route path="platoons" element={<ConsoleComingSoon title="Platoons" description="Platoon management, assignments, and leader oversight. Coming soon." />} />
-          <Route path="attendance" element={<ConsoleComingSoon title="Attendance Reports" description="Detailed attendance analytics across sessions, days and platoons. Coming soon." />} />
-          <Route path="staff" element={<ConsoleComingSoon title="Staff Management" description="Full staff roster, schedule assignments, and department overview. Coming soon." />} />
-          <Route path="programme" element={<ConsoleComingSoon title="Programme Management" description="Schedule editing, session creation and broadcast tools. Coming soon." />} />
-          <Route path="activity" element={<ConsoleComingSoon title="Activity Feed" description="Real-time activity stream across all camp operations. Coming soon." />} />
-          <Route path="settings" element={<ConsoleComingSoon title="Settings" description="Platform configuration, branding and system preferences. Coming soon." />} />
+          {/* Real modules replacing placeholders */}
+          <Route path="campers" element={<ConsoleCampers />} />
+          <Route path="platoons" element={<ConsolePlatoons />} />
+          <Route path="attendance" element={<ConsoleAttendance />} />
+          <Route path="staff" element={<ConsoleStaff />} />
+          <Route path="programme" element={<ConsoleProgramme />} />
+          <Route path="activity" element={<ConsoleActivity />} />
+          <Route path="settings" element={<ConsoleSettings />} />
+          <Route path="announcements" element={<ConsoleAnnouncements />} />
+          <Route path="reports" element={<ConsoleReports />} />
         </Route>
 
         {/* Legacy /admin route — redirect console users to /console */}

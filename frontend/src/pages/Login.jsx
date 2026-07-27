@@ -60,6 +60,19 @@ export default function Login() {
         return;
       }
 
+      // Fetch all active campers so they are available globally
+      try {
+        const campersRes = await fetch(`${API}/api/campers?status=active`, {
+          headers: { 'Authorization': `Bearer ${data.token}` }
+        });
+        if (campersRes.ok) {
+          const campersData = await campersRes.json();
+          dispatch({ type: 'SET_CAMPERS', payload: campersData.campers || [] });
+        }
+      } catch (err) {
+        console.error('Failed to fetch campers on login', err);
+      }
+
       dispatch({ type: 'LOGIN', payload: data });
       navigate('/');
     } catch {

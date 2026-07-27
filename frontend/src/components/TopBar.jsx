@@ -1,4 +1,5 @@
 import UserMenu from './UserMenu';
+import NotificationCentre from './NotificationCentre';
 
 export default function TopBar({ title }) {
   return (
@@ -8,7 +9,8 @@ export default function TopBar({ title }) {
         {title || 'Camp David 2026'}
       </div>
       
-      <div className="top-bar-right">
+      <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <NotificationCentre />
         <UserMenu lightMode={false} />
       </div>
     </header>

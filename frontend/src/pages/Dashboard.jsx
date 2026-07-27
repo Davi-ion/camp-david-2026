@@ -1,15 +1,12 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { CAMP_DAYS, schedule } from '../data/schedule';
 import { sessions } from '../data/sessions';
-import { staff } from '../data/staff';
-import { GROUPS } from '../data/campers';
 import UserMenu from '../components/UserMenu';
+import NotificationCentre from '../components/NotificationCentre';
 
-function getInitials(name) {
-  return name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
-}
+const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 function formatTime12(timeStr) {
   const [h, m] = timeStr.split(':').map(Number);
@@ -22,7 +19,6 @@ function getCampDay(now) {
   const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const day = CAMP_DAYS.find((d) => d.date === dateStr);
   if (day) return day;
-  // If not during camp, default to day 1 for demo
   return CAMP_DAYS[0];
 }
 
@@ -47,7 +43,6 @@ function getCurrentAndNext(dayKey, now) {
     }
   }
 
-  // If no current, pick a sensible default for demo
   if (!current && events.length > 0) {
     current = { ...events[Math.floor(events.length / 2)], demo: true };
     const [sh, sm] = current.time.split(':').map(Number);
@@ -89,36 +84,57 @@ export default function Dashboard() {
 
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
-  // Current session for attendance count
   const daySessions = sessions[campDay.key] || [];
-  const currentSessionKey = daySessions.length > 0
-    ? `${campDay.key}-${daySessions[0].key}`
-    : null;
-
-  const sessionAttendance = currentSessionKey
-    ? (state.attendance[currentSessionKey] || {})
-    : {};
+  const currentSessionKey = daySessions.length > 0 ? `${campDay.key}-${daySessions[0].key}` : null;
+  const sessionAttendance = currentSessionKey ? (state.attendance[currentSessionKey] || {}) : {};
   const checkedIn = Object.values(sessionAttendance).filter((s) => s === 'present').length;
   const openIncidents = state.incidents.filter((i) => i.status !== 'resolved').length;
 
-  // Time display
   const timeStr = now.toLocaleTimeString('en-NG', { hour: 'numeric', minute: '2-digit', hour12: true }).toUpperCase();
-
-  // Latest announcements (top 3)
-  const latestAnn = state.announcements.slice(0, 3);
-
-  const firstName = user?.name?.split(' ')[0] || 'Staff';
   const greeting = now.getHours() < 12 ? 'Good morning' : now.getHours() < 17 ? 'Good afternoon' : 'Good evening';
 
-  // Role-based personalization
   const isMedical = user?.roleName === 'Medical Team' || user?.department === 'Medical';
   const isCounsellor = user?.roleName === 'Counsellor' || user?.roleName === 'Platoon Leader';
-  const isFacilitator = user?.roleName === 'Session Facilitator';
 
-  // Platoon stats
   const myCampers = isCounsellor ? state.campers.filter(c => c.platoonId === user.platoonId) : state.campers;
   const myMedicalAlerts = myCampers.filter(c => c.medicalNotes).length;
   const myOpenIncidents = state.incidents.filter((i) => i.status !== 'resolved' && (isCounsellor ? myCampers.find(c => c.id === i.camperId) : true)).length;
+
+  const [announcements, setAnnouncements] = useState([]);
+
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        const token = sessionStorage.getItem('camp_token');
+        const res = await fetch(`${API}/api/announcements`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        setAnnouncements(data);
+      } catch (err) {}
+    };
+    if (user) fetchAnnouncements();
+  }, [user]);
+
+  const emergencyAlerts = announcements.filter(a => a.isEmergency);
+  
+  // Sort logic for regular display: pinned first, then unread, then recent
+  const displayAnnouncements = [...announcements].filter(a => !a.isEmergency).sort((a, b) => {
+    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+    if (a.isReadByMe !== b.isReadByMe) return a.isReadByMe ? 1 : -1;
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  }).slice(0, 3);
+
+  const markAnnRead = async (id) => {
+    try {
+      const token = sessionStorage.getItem('camp_token');
+      await fetch(`${API}/api/announcements/${id}/read`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAnnouncements(prev => prev.map(a => a.id === id ? { ...a, isReadByMe: true } : a));
+    } catch (err) {}
+  };
 
   return (
     <div className="page">
@@ -130,7 +146,10 @@ export default function Dashboard() {
               <div className="dash-logo">⛺</div>
               Camp David 2026
             </div>
-            <UserMenu lightMode={true} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <NotificationCentre lightMode={false} />
+              <UserMenu lightMode={true} />
+            </div>
           </div>
 
           <p className="dash-greeting">{greeting},</p>
@@ -144,7 +163,6 @@ export default function Dashboard() {
             <span>{campDay.full} · {timeStr}</span>
           </div>
 
-          {/* Happening Now */}
           {current && (
             <div className="now-card">
               <div className="now-card-label">
@@ -164,8 +182,27 @@ export default function Dashboard() {
       </div>
 
       <div className="container">
-        {/* Stats Row - Personalized */}
-        <div className="stats-row" style={{ marginTop: 20 }}>
+        
+        {/* Emergency Banner */}
+        {emergencyAlerts.length > 0 && (
+          <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {emergencyAlerts.map(alert => (
+              <div key={alert.id} style={{
+                background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 12, padding: 16,
+                boxShadow: '0 4px 12px rgba(239,68,68,0.15)', display: 'flex', gap: 16, alignItems: 'flex-start'
+              }}>
+                <div style={{ fontSize: '2rem', animation: 'pulse 2s infinite' }}>🚨</div>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ color: '#991B1B', margin: '0 0 4px 0', fontSize: '1.125rem' }}>{alert.title}</h3>
+                  <p style={{ color: '#B91C1C', fontSize: '0.9375rem', margin: 0, lineHeight: 1.5 }}>{alert.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Stats Row */}
+        <div className="stats-row" style={{ marginTop: emergencyAlerts.length > 0 ? 20 : 24 }}>
           {isMedical ? (
             <>
               <div className="stat-card">
@@ -242,28 +279,29 @@ export default function Dashboard() {
         {/* Announcements */}
         <div className="section-header">
           <span className="section-title">Announcements</span>
-          <Link to="/app/programme" className="section-link">See All</Link>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {latestAnn.length === 0 ? (
+          {displayAnnouncements.length === 0 ? (
             <div className="empty-state" style={{ padding: 20 }}>
               <div className="empty-state-text">No announcements yet</div>
             </div>
           ) : (
-            latestAnn.map((ann) => {
-              const author = staff.find((s) => s.id === ann.author);
-              const annTime = new Date(ann.createdAt);
-              const annTimeStr = annTime.toLocaleTimeString('en-NG', { hour: 'numeric', minute: '2-digit', hour12: true }).toUpperCase();
+            displayAnnouncements.map((ann) => {
+              const annTimeStr = new Date(ann.createdAt).toLocaleTimeString('en-NG', { hour: 'numeric', minute: '2-digit', hour12: true }).toUpperCase();
               return (
-                <div key={ann.id} className={`announcement-card ${ann.urgent ? 'urgent' : ''}`}>
+                <div key={ann.id} onClick={() => !ann.isReadByMe && markAnnRead(ann.id)} className={`announcement-card ${ann.pinned ? 'urgent' : ''}`} style={{ cursor: ann.isReadByMe ? 'default' : 'pointer' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      {ann.urgent && <span className="badge badge-urgent">URGENT</span>}
-                      <span className="font-semibold text-sm">{author?.name || 'Admin'}</span>
+                      {!ann.isReadByMe && <span className="badge" style={{ background: 'var(--teal)', color: '#fff' }}>NEW</span>}
+                      {ann.pinned && <span className="badge" style={{ background: '#eee' }}>PINNED</span>}
+                      <span className="font-semibold text-sm">{ann.authorName || 'Admin'}</span>
                     </div>
                     <span className="text-xs text-muted">{annTimeStr}</span>
                   </div>
-                  <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{ann.text}</p>
+                  <h4 style={{ margin: '0 0 4px 0', fontSize: '0.9375rem', color: 'var(--text)' }}>{ann.title}</h4>
+                  <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                    {ann.body}
+                  </p>
                 </div>
               );
             })

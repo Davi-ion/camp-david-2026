@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import NotificationCentre from '../components/NotificationCentre';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -196,10 +197,7 @@ export default function ConsoleTopNav() {
 
       {/* Actions */}
       <div className="console-topnav-actions">
-        <button className="console-notif-btn" title="Notifications">
-          🔔
-          {unreadCount > 0 && <span className="console-notif-badge" />}
-        </button>
+        <NotificationCentre lightMode={true} />
 
         <div ref={dropdownRef} style={{ position: 'relative' }}>
           <button className="console-user-chip" onClick={() => setDropdownOpen(!dropdownOpen)}>

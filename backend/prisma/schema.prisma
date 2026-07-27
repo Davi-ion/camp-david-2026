@@ -52,6 +52,9 @@ model Staff {
   // Phase 6 Drills
   assignedDrills      CampDrill[]       @relation("AssignedDrills")
   backupDrills        CampDrill[]       @relation("BackupDrills")
+
+  // Phase 7 Announcements
+  announcementReads   AnnouncementRead[]
 }
 
 // ─── Platoons ─────────────────────────────────────────────────────
@@ -134,16 +137,33 @@ model Announcement {
   id          String    @id @default(cuid())
   title       String
   body        String
-  urgent      Boolean   @default(false)
+  category    String    @default("General")
+  priority    String    @default("normal") // low, normal, high, critical
+  status      String    @default("published") // draft, scheduled, published, archived
+  isEmergency Boolean   @default(false)
   pinned      Boolean   @default(false)
-  archived    Boolean   @default(false)
-  targetType  String    @default("all") // all | platoon | role | individual
-  targetId    String?   // platoonId or roleId or staffId
+  targetType  String    @default("all") // all | platoon | role | department | individual
+  targetId    String?   
   scheduledAt DateTime?
+  expiryDate  DateTime?
   authorId    String?
   authorName  String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  readReceipts AnnouncementRead[]
+}
+
+model AnnouncementRead {
+  id             String       @id @default(cuid())
+  announcementId String
+  userId         String
+  readAt         DateTime     @default(now())
+
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user           Staff        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, userId])
 }
 
 // ─── Camp Settings ────────────────────────────────────────────────
@@ -200,6 +220,8 @@ model Notification {
   title     String
   message   String
   type      String   @default("info")
+  category  String   @default("General")
+  priority  String   @default("normal") // low, normal, high, critical
   isRead    Boolean  @default(false)
   link      String?
   createdAt DateTime @default(now())

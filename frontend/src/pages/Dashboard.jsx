@@ -110,6 +110,16 @@ export default function Dashboard() {
   const firstName = user?.name?.split(' ')[0] || 'Staff';
   const greeting = now.getHours() < 12 ? 'Good morning' : now.getHours() < 17 ? 'Good afternoon' : 'Good evening';
 
+  // Role-based personalization
+  const isMedical = user?.roleName === 'Medical Team' || user?.department === 'Medical';
+  const isCounsellor = user?.roleName === 'Counsellor' || user?.roleName === 'Platoon Leader';
+  const isFacilitator = user?.roleName === 'Session Facilitator';
+
+  // Platoon stats
+  const myCampers = isCounsellor ? state.campers.filter(c => c.platoonId === user.platoonId) : state.campers;
+  const myMedicalAlerts = myCampers.filter(c => c.medicalNotes).length;
+  const myOpenIncidents = state.incidents.filter((i) => i.status !== 'resolved' && (isCounsellor ? myCampers.find(c => c.id === i.camperId) : true)).length;
+
   return (
     <div className="page">
       {/* Dashboard Header */}
@@ -125,6 +135,9 @@ export default function Dashboard() {
 
           <p className="dash-greeting">{greeting},</p>
           <h1 className="dash-name">{user?.name || 'Staff Member'}</h1>
+          <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.8)', marginTop: 4, marginBottom: 16 }}>
+            {user?.roleName || user?.role} {user?.platoonKey ? `· ${user.platoonKey.toUpperCase()} PLATOON` : (user?.department ? `· ${user.department.toUpperCase()}` : '')}
+          </div>
 
           <div className="dash-day-strip">
             <span className="dash-day-badge">DAY {campDay.dayNum} OF 5</span>
@@ -151,20 +164,54 @@ export default function Dashboard() {
       </div>
 
       <div className="container">
-        {/* Stats Row */}
+        {/* Stats Row - Personalized */}
         <div className="stats-row" style={{ marginTop: 20 }}>
-          <div className="stat-card">
-            <div className="stat-value">{state.campers.length}</div>
-            <div className="stat-label">Campers</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-value">{checkedIn}</div>
-            <div className="stat-label">Checked In</div>
-          </div>
-          <div className="stat-card">
-            <div className={`stat-value ${openIncidents > 0 ? 'danger' : ''}`}>{openIncidents}</div>
-            <div className="stat-label">Open Incidents</div>
-          </div>
+          {isMedical ? (
+            <>
+              <div className="stat-card">
+                <div className="stat-value" style={{ color: 'var(--orange)' }}>{state.campers.filter(c => c.medicalNotes).length}</div>
+                <div className="stat-label">Medical Alerts</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-value">{state.campers.filter(c => c.dietaryRestrictions).length}</div>
+                <div className="stat-label">Dietary Reqs</div>
+              </div>
+              <div className="stat-card">
+                <div className={`stat-value ${openIncidents > 0 ? 'danger' : ''}`}>{openIncidents}</div>
+                <div className="stat-label">Health Incidents</div>
+              </div>
+            </>
+          ) : isCounsellor ? (
+            <>
+              <div className="stat-card">
+                <div className="stat-value">{myCampers.length}</div>
+                <div className="stat-label">My Campers</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-value">{myMedicalAlerts}</div>
+                <div className="stat-label">Alerts in Platoon</div>
+              </div>
+              <div className="stat-card">
+                <div className={`stat-value ${myOpenIncidents > 0 ? 'danger' : ''}`}>{myOpenIncidents}</div>
+                <div className="stat-label">Platoon Incidents</div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="stat-card">
+                <div className="stat-value">{state.campers.length}</div>
+                <div className="stat-label">Total Campers</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-value">{checkedIn}</div>
+                <div className="stat-label">Checked In</div>
+              </div>
+              <div className="stat-card">
+                <div className={`stat-value ${openIncidents > 0 ? 'danger' : ''}`}>{openIncidents}</div>
+                <div className="stat-label">Open Incidents</div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Up Next */}

@@ -33,6 +33,8 @@ model Staff {
   lockedUntil         DateTime?
   lastLoginAt         DateTime?
   createdBy           String?
+  tasks               String?   // JSON
+  availability        String?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
@@ -45,6 +47,7 @@ model Staff {
   passwordResetTokens PasswordResetToken[]
   assignedIncidents   Incident[]        @relation("IncidentAssignedStaff")
   reportedIncidents   Incident[]        @relation("IncidentReporter")
+  counselledCampers   Camper[]          @relation("CounsellorCampers")
 }
 
 // ─── Platoons ─────────────────────────────────────────────────────
@@ -85,12 +88,17 @@ model Camper {
   guardianRelation   String?
   address            String?
   notes              String?
+  dietaryRestrictions String?
+  church             String?
+  qrCode             String?   @unique
+  counsellorId       String?
   status             String    @default("active") // active | inactive | transferred
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  platoon  Platoon?   @relation(fields: [platoonId], references: [id])
-  incidents Incident[] @relation("IncidentCamper")
+  platoon    Platoon?   @relation(fields: [platoonId], references: [id])
+  counsellor Staff?     @relation("CounsellorCampers", fields: [counsellorId], references: [id])
+  incidents  Incident[] @relation("IncidentCamper")
 }
 
 // ─── Incidents ────────────────────────────────────────────────────

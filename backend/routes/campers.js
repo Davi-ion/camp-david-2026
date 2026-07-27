@@ -71,26 +71,41 @@ router.get('/:id', authenticate, requirePermission('view:campers'), async (req, 
 // ─── POST /api/campers ────────────────────────────────────────────
 router.post('/', authenticate, requirePermission('edit:campers'), async (req, res) => {
   try {
-    const {
-      name, dateOfBirth, age, gender, platoonId, medicalNotes, allergies, medications,
-      bloodGroup, emergencyContact, guardianName, guardianPhone, guardianEmail,
-      guardianRelation, address, notes, photo,
+    const { 
+      name, email, phone, gender, dateOfBirth, 
+      guardianName, guardianPhone, guardianEmail, guardianRelation,
+      medicalNotes, allergies, medications, bloodGroup, dietaryRestrictions,
+      church, address, emergencyContact, platoonId, counsellorId,
+      dormId, bedNumber, dormNotes 
     } = req.body;
     if (!name) return res.status(400).json({ error: 'Name is required' });
 
-    // Generate registration number
-    const count = await prisma.camper.count();
-    const registrationNumber = `CD2026-${1001 + count}`;
+    if (dormId && gender) {
+      const dorm = await prisma.dorm.findUnique({ where: { id: dormId } });
+      if (dorm && dorm.gender.toLowerCase() !== gender.toLowerCase()) {
+        return res.status(400).json({ error: `Validation Error: Cannot assign a ${gender} camper to a ${dorm.gender} dorm.` });
+      }
+    }
 
     const camper = await prisma.camper.create({
       data: {
-        name, dateOfBirth, age: age ? Number(age) : null, gender, platoonId: platoonId || null,
-        medicalNotes, allergies, medications, bloodGroup,
-        emergencyContact: typeof emergencyContact === 'object' ? JSON.stringify(emergencyContact) : emergencyContact,
+        registrationNumber: `CD26${Math.floor(1000 + Math.random() * 9000)}`,
+        name, gender, dateOfBirth,
         guardianName, guardianPhone, guardianEmail, guardianRelation,
-        address, notes, photo, registrationNumber, status: 'active',
+        medicalNotes, allergies, medications, bloodGroup, dietaryRestrictions,
+        church, address,
+        emergencyContact: emergencyContact ? JSON.stringify(emergencyContact) : null,
+        platoonId: platoonId || null,
+        counsellorId: counsellorId || null,
+        dormId: dormId || null,
+        bedNumber: bedNumber || null,
+        dormNotes: dormNotes || null,
+        status: 'active'
       },
-      include: { platoon: true },
+      include: {
+        platoon: true,
+        dorm: true
+      }
     });
 
     await logAudit({
@@ -113,6 +128,7 @@ router.put('/:id', authenticate, requirePermission('edit:campers'), async (req, 
     const data = { ...req.body };
     if (data.age) data.age = Number(data.age);
     if (data.platoonId === '') data.platoonId = null;
+    if (data.dormId === '') data.dormId = null;
     if (typeof data.emergencyContact === 'object') {
       data.emergencyContact = JSON.stringify(data.emergencyContact);
     }
@@ -121,12 +137,24 @@ router.put('/:id', authenticate, requirePermission('edit:campers'), async (req, 
     delete data.createdAt;
     delete data.updatedAt;
     delete data.platoon;
+    delete data.dorm;
     delete data.incidents;
+
+    if (data.dormId) {
+      // Check gender for validation
+      const camperToUpdate = await prisma.camper.findUnique({ where: { id: req.params.id } });
+      const currentGender = data.gender || camperToUpdate?.gender;
+      
+      const dorm = await prisma.dorm.findUnique({ where: { id: data.dormId } });
+      if (dorm && currentGender && dorm.gender.toLowerCase() !== currentGender.toLowerCase()) {
+        return res.status(400).json({ error: `Validation Error: Cannot assign a ${currentGender} camper to a ${dorm.gender} dorm.` });
+      }
+    }
 
     const camper = await prisma.camper.update({
       where: { id: req.params.id },
       data,
-      include: { platoon: true },
+      include: { platoon: true, dorm: true },
     });
 
     await logAudit({

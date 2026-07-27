@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { CAMP_DAYS, schedule } from '../data/schedule';
-
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -44,7 +43,7 @@ function KpiCard({ label, value, icon, color = '', delta, to }) {
   const card = (
     <div className="console-kpi-card" style={{ cursor: to ? 'pointer' : 'default' }}>
       <div className="console-kpi-label">
-        <span>{icon}</span>
+        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</span>
         {label}
       </div>
       <div className={`console-kpi-value ${color}`}>{value ?? '—'}</div>
@@ -115,16 +114,16 @@ export default function ConsoleDashboard() {
       {/* KPI Grid — Row 1 */}
       <div className="console-kpi-grid">
         <KpiCard label="Total Campers"   value={totalCampers}  icon="👥" to="/console/campers" />
-        <KpiCard label="Total Staff"     value={totalStaff}    icon="👤" to="/console/staff" />
+        <KpiCard label="Total Staff"     value={totalStaff}    icon="👮" to="/console/staff" />
         <KpiCard
           label="Open Incidents"
           value={openIncidents}
-          icon="🚨"
+          icon="⚠️"
           color={openIncidents === 0 ? '' : openIncidents > 3 ? 'red' : 'orange'}
           delta={{ type: openIncidents === 0 ? 'positive' : 'negative', text: openIncidents === 0 ? 'All clear' : `${openIncidents} requiring attention` }}
           to="/console/incidents"
         />
-        <KpiCard label="Medical Alerts" value={medAlerts} icon="🏥" color={medAlerts > 0 ? 'orange' : ''} delta={{ type: medAlerts > 0 ? 'neutral' : 'positive', text: medAlerts > 0 ? 'Campers with medical notes' : 'No medical alerts' }} to="/console/campers" />
+        <KpiCard label="Medical Alerts" value={medAlerts} icon="⚕️" color={medAlerts > 0 ? 'orange' : ''} delta={{ type: medAlerts > 0 ? 'neutral' : 'positive', text: medAlerts > 0 ? 'Campers with medical notes' : 'No medical alerts' }} to="/console/campers" />
       </div>
 
       {/* KPI Grid — Row 2 */}
@@ -146,14 +145,14 @@ export default function ConsoleDashboard() {
         <KpiCard
           label="Platoons"
           value={platoonSummary.length || 4}
-          icon="🏴"
+          icon="🛡️"
           delta={{ type: 'neutral', text: 'Active groups' }}
           to="/console/platoons"
         />
         <KpiCard
           label="Activity Today"
           value={recentActivity.length}
-          icon="📡"
+          icon="⚡"
           delta={{ type: 'neutral', text: 'Admin actions logged' }}
           to="/console/activity"
         />
@@ -177,7 +176,7 @@ export default function ConsoleDashboard() {
               ) : (
                 platoonSummary.map(p => (
                   <div key={p.id} className="console-platoon-row">
-                    <span style={{ fontSize: '1.125rem', width: 24, textAlign: 'center' }}>{p.emoji}</span>
+                    <span style={{ width: 24, textAlign: 'center' }}>{p.emoji}</span>
                     <span className="console-platoon-label">{p.name}</span>
                     <div className="console-platoon-bar-track">
                       <div className="console-platoon-bar-fill" style={{ width: `${Math.min(100, (p.camperCount / Math.max(...platoonSummary.map(x => x.camperCount), 1)) * 100)}%`, background: p.colorHex || 'var(--teal)' }} />
@@ -275,7 +274,7 @@ export default function ConsoleDashboard() {
                   <div key={ann.id} style={{ marginBottom: 14, paddingBottom: 14, borderBottom: '1px solid var(--border-light)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                       {ann.urgent && <span style={{ fontSize: '0.625rem', fontWeight: 700, background: '#FEF2F2', color: 'var(--red)', padding: '2px 6px', borderRadius: 4 }}>URGENT</span>}
-                      {ann.pinned && <span style={{ fontSize: '0.625rem', fontWeight: 700, background: '#F0FDF4', color: 'var(--teal)', padding: '2px 6px', borderRadius: 4 }}>📌 PINNED</span>}
+                      {ann.pinned && <span style={{ fontSize: '0.625rem', fontWeight: 700, background: '#F0FDF4', color: 'var(--teal)', padding: '2px 6px', borderRadius: 4, display: 'inline-flex', alignItems: 'center', gap: 4 }}>📌 PINNED</span>}
                       <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text)' }}>{ann.title}</span>
                     </div>
                     <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{ann.body.slice(0, 100)}{ann.body.length > 100 ? '…' : ''}</p>

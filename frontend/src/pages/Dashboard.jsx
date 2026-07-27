@@ -5,7 +5,6 @@ import { CAMP_DAYS, schedule } from '../data/schedule';
 import { sessions } from '../data/sessions';
 import UserMenu from '../components/UserMenu';
 import NotificationCentre from '../components/NotificationCentre';
-
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 function formatTime12(timeStr) {
@@ -311,11 +310,11 @@ export default function Dashboard() {
         {/* Quick Actions */}
         <div className="quick-actions">
           <button className="quick-action-btn" onClick={() => navigate('/app/rollcall')}>
-            <div className="quick-action-icon teal">📋</div>
+            <div className="quick-action-icon teal" style={{ fontSize: '1.5rem' }}>📋</div>
             Take Roll Call
           </button>
           <button className="quick-action-btn" onClick={() => navigate('/app/incidents')}>
-            <div className="quick-action-icon orange">🚨</div>
+            <div className="quick-action-icon orange" style={{ fontSize: '1.5rem' }}>⚠️</div>
             Report Incident
           </button>
         </div>

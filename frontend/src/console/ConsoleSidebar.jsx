@@ -5,7 +5,7 @@ const NAV_SECTIONS = [
   {
     label: 'Overview',
     items: [
-      { to: '/console',          label: 'Dashboard',    icon: '⬛', exact: true },
+      { to: '/console',          label: 'Dashboard',    icon: '📊', exact: true },
       { to: '/console/activity', label: 'Activity Feed', icon: '📡' },
     ],
   },
@@ -14,10 +14,11 @@ const NAV_SECTIONS = [
     items: [
       { to: '/console/campers',     label: 'Campers',     icon: '👥', badgeKey: 'totalCampers' },
       { to: '/console/platoons',    label: 'Platoons',    icon: '🏴' },
+      { to: '/console/dorms',       label: 'Dorms',       icon: '🏢' },
       { to: '/console/attendance',  label: 'Attendance',  icon: '📋' },
       { to: '/console/incidents',   label: 'Incidents',   icon: '🚨', badgeKey: 'openIncidents' },
       { to: '/console/programme',   label: 'Programme',   icon: '📅' },
-      { to: '/console/drills',      label: 'Camp Drills', icon: '📋' },
+      { to: '/console/drills',      label: 'Camp Drills', icon: '🦺' },
       { to: '/console/announcements', label: 'Announcements', icon: '📢' },
     ],
   },
@@ -25,21 +26,22 @@ const NAV_SECTIONS = [
     label: 'Administration',
     items: [
       { to: '/console/staff',    label: 'Staff',              icon: '👤' },
-      { to: '/console/users',    label: 'User Management',    icon: '⚙️' },
-      { to: '/console/roles',    label: 'Roles & Permissions', icon: '🔐' },
-      { to: '/console/reports',  label: 'Reports',            icon: '📊' },
-      { to: '/console/audit',    label: 'Audit Logs',         icon: '📜' },
+      { to: '/console/users',    label: 'User Management',    icon: '👥' },
+      { to: '/console/roles',    label: 'Roles & Permissions', icon: '🔑' },
+      { to: '/console/import',   label: 'Bulk Import',        icon: '📤' },
+      { to: '/console/reports',  label: 'Reports',            icon: '📈' },
+      { to: '/console/audit',    label: 'Audit Logs',         icon: '📝' },
     ],
   },
   {
     label: 'Settings',
     items: [
-      { to: '/console/settings', label: 'Settings', icon: '🔧' },
+      { to: '/console/settings', label: 'Settings', icon: '⚙️' },
     ],
   },
 ];
 
-export default function ConsoleSidebar() {
+export default function ConsoleSidebar({ isOpen, onClose }) {
   const { state } = useApp();
   const location = useLocation();
 
@@ -58,7 +60,7 @@ export default function ConsoleSidebar() {
   };
 
   return (
-    <aside className="console-sidebar">
+    <aside className={`console-sidebar ${isOpen ? 'open' : ''}`}>
       {/* Brand */}
       <div className="console-brand">
         <div className="console-brand-logo">⛺</div>
@@ -80,6 +82,7 @@ export default function ConsoleSidebar() {
                 <NavLink
                   key={item.to}
                   to={item.to}
+                  onClick={onClose}
                   className={`console-nav-item${active ? ' active' : ''}`}
                 >
                   <span className="console-nav-icon">{item.icon}</span>
@@ -99,7 +102,7 @@ export default function ConsoleSidebar() {
       {/* Sidebar Footer */}
       <div className="console-sidebar-footer">
         <Link to="/app" className="console-portal-switch">
-          <span style={{ fontSize: '1.25rem' }}>📱</span>
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Smartphone size={20} /></span>
           <div>
             <div className="console-portal-switch-text">Staff Portal</div>
             <div className="console-portal-switch-sub">Switch to mobile view</div>

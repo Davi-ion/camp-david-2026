@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { usePermissions } from '../hooks/usePermissions';
-
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const INCIDENT_TYPES = [
-  { id: 'medical', label: 'Medical', emoji: '🔴', color: 'var(--red)' },
-  { id: 'behavioural', label: 'Behavioural', emoji: '🟡', color: 'var(--amber)' },
+  { id: 'medical', label: 'Medical', emoji: '⚕️', color: 'var(--red)' },
+  { id: 'behavioural', label: 'Behavioural', emoji: '⚠️', color: 'var(--amber)' },
   { id: 'security', label: 'Security', emoji: '🛡️', color: 'var(--blue)' },
-  { id: 'safety', label: 'Safety', emoji: '🦺', color: 'var(--orange)' },
+  { id: 'safety', label: 'Safety', emoji: '🚨', color: 'var(--orange)' },
   { id: 'lost_property', label: 'Lost Property', emoji: '🔍', color: 'var(--text-muted)' },
   { id: 'other', label: 'Other', emoji: '📝', color: 'var(--text)' },
 ];
@@ -203,7 +202,7 @@ export default function ConsoleIncidents() {
                           )}
                           <button
                             onClick={() => updateIncidentStatus(inc.id, 'resolved')}
-                            style={{ padding: '4px 8px', fontSize: '0.75rem', fontWeight: 600, border: 'none', borderRadius: 4, background: 'var(--teal)', color: '#fff', cursor: 'pointer' }}
+                            style={{ padding: '4px 8px', fontSize: '0.75rem', fontWeight: 600, border: 'none', borderRadius: 4, background: 'var(--teal)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}
                           >
                             ✓ Resolve
                           </button>

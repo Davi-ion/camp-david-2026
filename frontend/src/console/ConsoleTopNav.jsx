@@ -145,7 +145,7 @@ function GlobalSearch() {
 }
 
 // ─── ConsoleTopNav ────────────────────────────────────────────────
-export default function ConsoleTopNav() {
+export default function ConsoleTopNav({ onMenuClick }) {
   const { state, dispatch } = useApp();
   const [location, setLocation] = useState(window.location.pathname);
   const navigate = useNavigate();
@@ -181,16 +181,21 @@ export default function ConsoleTopNav() {
 
   return (
     <header className="console-topnav">
-      {/* Breadcrumb */}
-      <nav className="console-breadcrumb">
-        <Link to="/console" className="console-breadcrumb-item">Console</Link>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <button className="console-hamburger" onClick={onMenuClick} style={{ display: 'none' }}>
+          ☰
+        </button>
+        {/* Breadcrumb */}
+        <nav className="console-breadcrumb">
+          <Link to="/console" className="console-breadcrumb-item">Console</Link>
         {window.location.pathname !== '/console' && (
           <>
             <span className="console-breadcrumb-sep">/</span>
             <span className="console-breadcrumb-item current">{BREADCRUMB_LABELS[window.location.pathname] || 'Page'}</span>
           </>
         )}
-      </nav>
+        </nav>
+      </div>
 
       {/* Functional Global Search */}
       <GlobalSearch />

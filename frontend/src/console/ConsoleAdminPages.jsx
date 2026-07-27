@@ -179,20 +179,72 @@ export function ConsoleUserManagement() {
 export function ConsoleRoleManagement() {
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({ name: '', description: '', isSystem: false, permissions: [] });
+
+  const modules = ['Dashboard', 'Campers', 'Staff', 'Platoons', 'Programme', 'Camp Drills', 'Attendance', 'Reports', 'Announcements', 'Settings', 'User Management'];
+  const actions = ['view', 'create', 'edit', 'delete', 'approve', 'export', 'manage'];
+
+  const fetchRoles = async () => {
+    try {
+      const token = sessionStorage.getItem('camp_token');
+      const res = await fetch(`${API}/api/roles`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setRoles(data || []);
+    } catch (e) { console.error(e); } finally { setLoading(false); }
+  };
 
   useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const token = sessionStorage.getItem('camp_token');
-        const res = await fetch(`${API}/api/roles`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        setRoles(data || []);
-      } catch (e) { console.error(e); } finally { setLoading(false); }
-    };
     fetchRoles();
   }, []);
+
+  const openModal = (role = null) => {
+    if (role) {
+      setFormData({
+        ...role,
+        permissions: Array.isArray(role.permissions) ? role.permissions : JSON.parse(role.permissions || '[]')
+      });
+    } else {
+      setFormData({ name: '', description: '', isSystem: false, permissions: [] });
+    }
+    setShowModal(true);
+  };
+
+  const togglePermission = (mod, action) => {
+    if (formData.isSystem) return; // Cannot edit system roles directly in this simple UI
+    const permString = `${action}:${mod.toLowerCase().replace(' ', '_')}`;
+    const newPerms = new Set(formData.permissions);
+    if (newPerms.has(permString)) newPerms.delete(permString);
+    else newPerms.add(permString);
+    if (newPerms.has('manage:all')) newPerms.delete('manage:all'); // Clean up master override if toggling specifics
+    setFormData({ ...formData, permissions: Array.from(newPerms) });
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    const token = sessionStorage.getItem('camp_token');
+    const isNew = !formData.id;
+    try {
+      const url = isNew ? `${API}/api/roles` : `${API}/api/roles/${formData.id}`;
+      const res = await fetch(url, {
+        method: isNew ? 'POST' : 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(formData)
+      });
+      if (!res.ok) throw new Error('Failed to save role');
+      setShowModal(false);
+      fetchRoles();
+    } catch (err) { alert(err.message); }
+  };
+
+  const deleteRole = async (id) => {
+    if (!confirm('Are you sure you want to delete this role? Users assigned to it will lose access.')) return;
+    const token = sessionStorage.getItem('camp_token');
+    try {
+      await fetch(`${API}/api/roles/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      fetchRoles();
+    } catch (err) { alert('Failed to delete'); }
+  };
 
   return (
     <div>
@@ -201,6 +253,9 @@ export function ConsoleRoleManagement() {
           <h1 className="console-page-title">Roles & Permissions</h1>
           <p className="console-page-subtitle">System roles and their associated permissions</p>
         </div>
+        <button className="btn btn-primary" onClick={() => openModal()}>
+          + Create Custom Role
+        </button>
       </div>
 
       <div className="console-card">
@@ -212,39 +267,111 @@ export function ConsoleRoleManagement() {
                 <th>Description</th>
                 <th>Permissions</th>
                 <th>Type</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {roles.map(r => (
-                <tr key={r.id}>
-                  <td style={{ fontWeight: 600 }}>{r.name}</td>
-                  <td style={{ color: 'var(--text-secondary)', maxWidth: 280 }}>{r.description}</td>
-                  <td>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                      {(Array.isArray(r.permissions) ? r.permissions : JSON.parse(r.permissions || '[]')).slice(0, 4).map(p => (
-                        <span key={p} className="badge badge-teal" style={{ fontSize: '0.6875rem' }}>{p}</span>
-                      ))}
-                      {(Array.isArray(r.permissions) ? r.permissions : JSON.parse(r.permissions || '[]')).length > 4 && (
-                        <span className="badge" style={{ background: '#eee', fontSize: '0.6875rem' }}>
-                          +{(Array.isArray(r.permissions) ? r.permissions : JSON.parse(r.permissions || '[]')).length - 4} more
-                        </span>
+              {roles.map(r => {
+                const perms = Array.isArray(r.permissions) ? r.permissions : JSON.parse(r.permissions || '[]');
+                return (
+                  <tr key={r.id}>
+                    <td style={{ fontWeight: 600 }}>{r.name}</td>
+                    <td style={{ color: 'var(--text-secondary)', maxWidth: 280 }}>{r.description}</td>
+                    <td>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                        {perms.includes('all') || perms.includes('manage:all') ? (
+                          <span className="badge badge-dark">Full Access</span>
+                        ) : (
+                          <>
+                            {perms.slice(0, 4).map(p => <span key={p} className="badge badge-teal" style={{ fontSize: '0.6875rem' }}>{p}</span>)}
+                            {perms.length > 4 && <span className="badge" style={{ background: '#eee', fontSize: '0.6875rem' }}>+{perms.length - 4} more</span>}
+                          </>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      {r.isSystem
+                        ? <span className="badge badge-dark" style={{ fontSize: '0.6875rem' }}>System</span>
+                        : <span className="badge" style={{ background: '#eee', fontSize: '0.6875rem' }}>Custom</span>}
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <button className="btn btn-text" onClick={() => openModal(r)}>Edit</button>
+                      {!r.isSystem && (
+                        <button className="btn btn-text" onClick={() => deleteRole(r.id)} style={{ color: 'var(--red)' }}>Delete</button>
                       )}
-                    </div>
-                  </td>
-                  <td>
-                    {r.isSystem
-                      ? <span className="badge badge-dark" style={{ fontSize: '0.6875rem' }}>System</span>
-                      : <span className="badge" style={{ background: '#eee', fontSize: '0.6875rem' }}>Custom</span>}
-                  </td>
-                </tr>
-              ))}
-              {roles.length === 0 && !loading && (
-                <tr><td colSpan="4" style={{ textAlign: 'center', padding: 48, color: 'var(--text-secondary)' }}>No roles found.</td></tr>
-              )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
+
+      {showModal && (
+        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="console-card" style={{ width: 900, maxWidth: '95%', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+            <div className="console-card-header">
+              <span className="console-card-title">{formData.id ? 'Edit Role' : 'Create Custom Role'}</span>
+              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+            </div>
+            <div className="console-card-body" style={{ overflowY: 'auto' }}>
+              <form id="roleForm" onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 16 }}>
+                  <div>
+                    <label className="input-label">Role Name</label>
+                    <input required className="input-field" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} disabled={formData.isSystem} />
+                  </div>
+                  <div>
+                    <label className="input-label">Description</label>
+                    <input className="input-field" value={formData.description || ''} onChange={e => setFormData({ ...formData, description: e.target.value })} disabled={formData.isSystem} />
+                  </div>
+                </div>
+
+                <div style={{ marginTop: 24 }}>
+                  <h4 style={{ marginBottom: 12 }}>Permissions Matrix</h4>
+                  {formData.isSystem && <div style={{ color: 'var(--amber)', fontSize: '0.875rem', marginBottom: 16 }}>System role permissions are protected and cannot be modified.</div>}
+                  <div style={{ overflowX: 'auto', border: '1px solid var(--border-light)', borderRadius: 8 }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8125rem' }}>
+                      <thead style={{ background: 'var(--bg-light)' }}>
+                        <tr>
+                          <th style={{ padding: '8px 12px', textAlign: 'left', borderBottom: '1px solid var(--border-light)' }}>Module</th>
+                          {actions.map(a => <th key={a} style={{ padding: '8px 12px', textTransform: 'capitalize', textAlign: 'center', borderBottom: '1px solid var(--border-light)' }}>{a}</th>)}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {modules.map(mod => (
+                          <tr key={mod} style={{ borderBottom: '1px solid var(--border-light)' }}>
+                            <td style={{ padding: '8px 12px', fontWeight: 500 }}>{mod}</td>
+                            {actions.map(action => {
+                              const permString = `${action}:${mod.toLowerCase().replace(' ', '_')}`;
+                              const hasPerm = formData.permissions.includes(permString) || formData.permissions.includes('all') || formData.permissions.includes('manage:all');
+                              return (
+                                <td key={action} style={{ padding: '8px 12px', textAlign: 'center' }}>
+                                  <input 
+                                    type="checkbox" 
+                                    checked={hasPerm} 
+                                    disabled={formData.isSystem || formData.permissions.includes('all')}
+                                    onChange={() => togglePermission(mod, action)} 
+                                  />
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button type="button" onClick={() => setShowModal(false)} className="btn btn-secondary">Cancel</button>
+              {!formData.isSystem && <button type="submit" form="roleForm" className="btn btn-primary">Save Role</button>}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

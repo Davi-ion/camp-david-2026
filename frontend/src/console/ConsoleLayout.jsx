@@ -1,6 +1,7 @@
 import { Navigate, Outlet, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { usePermissions } from '../hooks/usePermissions';
+import { useState } from 'react';
 import ConsoleSidebar from './ConsoleSidebar';
 import ConsoleTopNav from './ConsoleTopNav';
 import './console.css';
@@ -42,6 +43,8 @@ export default function ConsoleLayout() {
   const { state } = useApp();
   const { permissions } = usePermissions();
 
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+
   // Must be authenticated
   if (!state.currentUser) {
     return <Navigate to="/login" replace />;
@@ -54,9 +57,14 @@ export default function ConsoleLayout() {
 
   return (
     <div className="console-root">
-      <ConsoleSidebar />
+      {/* Mobile overlay */}
+      <div 
+        className={`console-sidebar-overlay ${isSidebarOpen ? 'open' : ''}`} 
+        onClick={() => setSidebarOpen(false)}
+      />
+      <ConsoleSidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="console-main">
-        <ConsoleTopNav />
+        <ConsoleTopNav onMenuClick={() => setSidebarOpen(true)} />
         <main className="console-content console-fade-in">
           <Outlet />
         </main>

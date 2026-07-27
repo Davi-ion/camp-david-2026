@@ -1,9 +1,9 @@
 // 12 sample campers across 4 groups
 export const GROUPS = [
-  { id: 'eagles', name: 'Eagles', emoji: '🦅' },
-  { id: 'lions', name: 'Lions', emoji: '🦁' },
-  { id: 'flames', name: 'Flames', emoji: '🔥' },
-  { id: 'arrows', name: 'Arrows', emoji: '🏹' },
+  { id: 'eagles', name: 'Eagles' },
+  { id: 'lions', name: 'Lions' },
+  { id: 'flames', name: 'Flames' },
+  { id: 'arrows', name: 'Arrows' },
 ];
 
 export const campers = [

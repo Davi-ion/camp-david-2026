@@ -20,6 +20,8 @@ import settingsRoutes from './routes/settings.js';
 import reportsRoutes from './routes/reports.js';
 import drillsRoutes from './routes/drills.js';
 import notificationsRoutes from './routes/notifications.js';
+import bulkRoutes from './routes/bulk.js';
+import dormsRoutes from './routes/dorms.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = path.join(__dirname, 'dev.db');
@@ -55,6 +57,8 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/drills', drillsRoutes);
 app.use('/api/notifications', notificationsRoutes);
+app.use('/api/bulk', bulkRoutes);
+app.use('/api/dorms', dormsRoutes);
 
 // ─── Global Search ────────────────────────────────────────────────
 app.get('/api/search', async (req, res) => {

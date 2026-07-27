@@ -763,3 +763,104 @@
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* =============================================
+   Phase 9: Mobile Optimization
+   ============================================= */
+
+/* Sidebar Overlay */
+.console-sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.console-sidebar-overlay.open {
+  display: block;
+  opacity: 1;
+}
+
+@media (max-width: 1024px) {
+  /* 1. Sidebar Drawer */
+  .console-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.1);
+  }
+
+  .console-sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* 2. Main Content Full Width */
+  .console-main {
+    margin-left: 0;
+  }
+
+  /* 3. Hamburger Menu in Top Nav */
+  .console-hamburger {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-right: 12px;
+    font-size: 1.25rem;
+    color: var(--text);
+  }
+
+  /* 4. Top Nav Adjustments */
+  .console-topnav {
+    padding: 0 16px;
+  }
+  
+  .console-search {
+    display: none; /* Hide global search bar on very small screens, or collapse it */
+  }
+
+  /* 5. Responsive Forms & Modals */
+  .modal-content, .console-card {
+    margin: 10px;
+    max-width: calc(100% - 20px) !important;
+  }
+  
+  .console-card-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+  
+  .console-card-header form {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .console-card-header input,
+  .console-card-header select,
+  .console-card-header button {
+    width: 100%;
+    max-width: none !important;
+  }
+
+  /* 6. Dashboard Cards */
+  .console-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* 7. Tables Padding */
+  .console-table th, .console-table td {
+    padding: 12px 10px;
+  }
+
+  /* Make sure buttons are easily tappable */
+  .btn {
+    padding: 10px 16px;
+  }
+}
+

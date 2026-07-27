@@ -6,7 +6,6 @@ import { sessions } from '../data/sessions';
 import { GROUPS } from '../data/campers';
 import TopBar from '../components/TopBar';
 import EmptyState from '../components/EmptyState';
-
 function getInitials(name) {
   return name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
 }
@@ -25,6 +24,7 @@ export default function RollCall() {
   const [selectedDay, setSelectedDay] = useState(defaultDay);
   const [selectedSession, setSelectedSession] = useState(null);
   const [groupFilter, setGroupFilter] = useState('all');
+  const [departureGrouping, setDepartureGrouping] = useState('platoon');
 
   const daySessions = sessions[selectedDay] || [];
 
@@ -43,15 +43,31 @@ export default function RollCall() {
     return list;
   }, [state.campers, user, groupFilter]);
 
-  // Group campers by team
+  // Group campers by team or dorm based on Smart Grouping Engine
   const groupedCampers = useMemo(() => {
     const groups = {};
+    
+    // Determine grouping strategy based on sessionKey
+    let strategy = 'platoon';
+    if (sessionKey) {
+      if (sessionKey === 'wed-arrival') strategy = 'platoon';
+      else if (sessionKey === 'sun-departure') strategy = departureGrouping;
+      else strategy = 'dorm'; // all other morning / lights_out sessions are by dorm
+    }
+    
     visibleCampers.forEach((c) => {
-      if (!groups[c.group]) groups[c.group] = [];
-      groups[c.group].push(c);
+      let groupKey = 'Unassigned';
+      if (strategy === 'dorm') {
+        groupKey = c.dorm?.name || 'Unassigned Dorm';
+      } else {
+        groupKey = c.platoon?.name || c.group || 'Unassigned Platoon';
+      }
+      
+      if (!groups[groupKey]) groups[groupKey] = [];
+      groups[groupKey].push(c);
     });
     return groups;
-  }, [visibleCampers]);
+  }, [visibleCampers, sessionKey, departureGrouping]);
 
   // Attendance for current session
   const sessionData = sessionKey ? (state.attendance[sessionKey] || {}) : {};
@@ -138,10 +154,32 @@ export default function RollCall() {
                 key={g.id}
                 className={`filter-tab ${groupFilter === g.id ? 'active' : ''}`}
                 onClick={() => setGroupFilter(g.id)}
+                style={{ display: 'flex', alignItems: 'center', gap: 4 }}
               >
                 {g.emoji} {g.name}
               </button>
             ))}
+          </div>
+        )}
+
+        {/* Departure Grouping Toggle */}
+        {sessionKey === 'sun-departure' && isAdmin && (
+          <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 12, background: 'var(--surface-50)', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)' }}>
+            <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>Grouping Strategy:</span>
+            <div className="filter-tabs" style={{ margin: 0 }}>
+              <button 
+                className={`filter-tab ${departureGrouping === 'platoon' ? 'active' : ''}`}
+                onClick={() => setDepartureGrouping('platoon')}
+              >
+                By Platoon
+              </button>
+              <button 
+                className={`filter-tab ${departureGrouping === 'dorm' ? 'active' : ''}`}
+                onClick={() => setDepartureGrouping('dorm')}
+              >
+                By Dorm
+              </button>
+            </div>
           </div>
         )}
 
@@ -180,7 +218,7 @@ export default function RollCall() {
         {/* Camper List */}
         {!sessionKey ? (
           <EmptyState 
-            icon="📋"
+            icon={<div style={{ fontSize: '3rem' }}>📋</div>}
             title="Ready for Roll Call"
             description="Select a session above to begin."
           />
@@ -191,7 +229,7 @@ export default function RollCall() {
               return (
                 <div key={groupId}>
                   <div className="group-header">
-                    {group?.emoji} {group?.name || groupId}
+                    {group?.emoji || '🛡️'} {group?.name || groupId}
                   </div>
                   {camperList.map((camper) => {
                     const status = sessionData[camper.id] || null;
@@ -207,7 +245,12 @@ export default function RollCall() {
                         <div className="camper-info">
                           <div className="camper-name">
                             {camper.name}
-                            {camper.medicalNotes && <span className="medical-flag">⚕</span>}
+                            {camper.medicalNotes && <span className="medical-flag">⚕️</span>}
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                            {sessionKey?.includes('lights_out') || sessionKey?.includes('morning') ? 
+                              (camper.bedNumber ? `Bed: ${camper.bedNumber}` : 'No bed assigned') : 
+                              (camper.platoon?.name || camper.group)}
                           </div>
                         </div>
                         <div className="status-buttons">

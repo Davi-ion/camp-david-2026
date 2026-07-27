@@ -55,6 +55,10 @@ model Staff {
 
   // Phase 7 Announcements
   announcementReads   AnnouncementRead[]
+  
+  // Phase 10 Dorms
+  supervisedDorms          Dorm[] @relation("DormSupervisor")
+  assistantSupervisedDorms Dorm[] @relation("DormAssistantSupervisor")
 }
 
 // ─── Platoons ─────────────────────────────────────────────────────
@@ -75,6 +79,23 @@ model Platoon {
   drills  CampDrill[] @relation("PlatoonDrills")
 }
 
+// ─── Dorms ────────────────────────────────────────────────────────
+model Dorm {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  gender      String   // "male" | "female"
+  capacity    Int      @default(50)
+  status      String   @default("active")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  supervisorId          String?
+  assistantSupervisorId String?
+
+  campers             Camper[]
+  supervisor          Staff?   @relation("DormSupervisor", fields: [supervisorId], references: [id])
+  assistantSupervisor Staff?   @relation("DormAssistantSupervisor", fields: [assistantSupervisorId], references: [id])
+}
+
 // ─── Campers ─────────────────────────────────────────────────────
 model Camper {
   id                 String    @id @default(cuid())
@@ -85,6 +106,9 @@ model Camper {
   gender             String?
   photo              String?   // URL or base64
   platoonId          String?
+  dormId             String?
+  bedNumber          String?
+  dormNotes          String?
   medicalNotes       String?
   allergies          String?
   medications        String?
@@ -105,6 +129,7 @@ model Camper {
   updatedAt          DateTime  @updatedAt
 
   platoon    Platoon?   @relation(fields: [platoonId], references: [id])
+  dorm       Dorm?      @relation(fields: [dormId], references: [id])
   counsellor Staff?     @relation("CounsellorCampers", fields: [counsellorId], references: [id])
   incidents  Incident[] @relation("IncidentCamper")
 }

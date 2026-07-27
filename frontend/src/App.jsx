@@ -20,12 +20,14 @@ import ConsoleDashboard from './console/ConsoleDashboard';
 import ConsoleIncidents from './console/ConsoleIncidents';
 import ConsoleCampers from './console/ConsoleCampers';
 import ConsolePlatoons from './console/ConsolePlatoons';
+import ConsoleDorms from './console/ConsoleDorms';
 import ConsoleStaff from './console/ConsoleStaff';
 import ConsoleProgramme from './console/ConsoleProgramme';
 import ConsoleDrills from './console/ConsoleDrills';
 import ConsoleAttendance from './console/ConsoleAttendance';
 import ConsoleAnnouncements from './console/ConsoleAnnouncements';
 import ConsoleReports from './console/ConsoleReports';
+import ConsoleBulkImport from './console/ConsoleBulkImport';
 import ConsoleSettings from './console/ConsoleSettings';
 import ConsoleActivity from './console/ConsoleActivity';
 import { ConsoleUserManagement, ConsoleRoleManagement, ConsoleAuditLog } from './console/ConsoleAdminPages';
@@ -119,6 +121,7 @@ function App() {
           {/* Real modules replacing placeholders */}
           <Route path="campers" element={<ConsoleCampers />} />
           <Route path="platoons" element={<ConsolePlatoons />} />
+          <Route path="dorms" element={<ConsoleDorms />} />
           <Route path="attendance" element={<ConsoleAttendance />} />
           <Route path="staff" element={<ConsoleStaff />} />
           <Route path="programme" element={<ConsoleProgramme />} />
@@ -127,6 +130,7 @@ function App() {
           <Route path="settings" element={<ConsoleSettings />} />
           <Route path="announcements" element={<ConsoleAnnouncements />} />
           <Route path="reports" element={<ConsoleReports />} />
+          <Route path="import" element={<ConsoleBulkImport />} />
         </Route>
 
         {/* Legacy /admin route — redirect console users to /console */}

@@ -5,11 +5,10 @@ import { GROUPS } from '../data/campers';
 import { staff } from '../data/staff';
 import TopBar from '../components/TopBar';
 import EmptyState from '../components/EmptyState';
-
 const INCIDENT_TYPES = [
-  { id: 'medical', label: 'Medical', emoji: '🔴', color: 'var(--red)' },
-  { id: 'behavioural', label: 'Behavioural', emoji: '🟡', color: 'var(--amber)' },
-  { id: 'welfare', label: 'Welfare', emoji: '🔵', color: 'var(--blue)' },
+  { id: 'medical', label: 'Medical', emoji: '⚕️', color: 'var(--red)' },
+  { id: 'behavioural', label: 'Behavioural', emoji: '⚠️', color: 'var(--amber)' },
+  { id: 'welfare', label: 'Welfare', emoji: '🛡️', color: 'var(--blue)' },
 ];
 
 const STATUSES = [
@@ -108,7 +107,7 @@ export default function Incidents() {
                   const group = GROUPS.find((g) => g.id === c.group);
                   return (
                     <option key={c.id} value={c.id}>
-                      {c.name} ({group?.emoji} {group?.name})
+                      {c.name} ({group?.name})
                     </option>
                   );
                 })}
@@ -122,7 +121,7 @@ export default function Incidents() {
                   <button
                     key={t.id}
                     className={`session-btn ${formType === t.id ? 'active' : ''}`}
-                    style={formType === t.id ? { background: t.color, color: '#fff', borderColor: t.color } : {}}
+                    style={formType === t.id ? { background: t.color, color: '#fff', borderColor: t.color, display: 'flex', alignItems: 'center', gap: 6 } : { display: 'flex', alignItems: 'center', gap: 6 }}
                     onClick={() => setFormType(t.id)}
                   >
                     {t.emoji} {t.label}
@@ -162,7 +161,7 @@ export default function Incidents() {
         {/* Incidents List */}
         {visibleIncidents.length === 0 ? (
           <EmptyState 
-            icon="✅"
+            icon={<div style={{ fontSize: '3rem' }}>✓</div>}
             title={statusFilter === 'all' ? 'No incidents reported' : `No ${statusFilter.replace('_', ' ')} incidents`}
             description="You're all caught up."
           />
@@ -193,7 +192,7 @@ export default function Incidents() {
                         </div>
                         <div>
                           <div className="font-semibold" style={{ fontSize: '0.9375rem' }}>{camper?.name || 'Unknown'}</div>
-                          <div className="text-xs text-muted">{group?.emoji} {group?.name} · Reported by {reporter?.name || 'Unknown'}</div>
+                          <div className="text-xs text-muted">{group?.emoji || '🛡️'} {group?.name} · Reported by {reporter?.name || 'Unknown'}</div>
                         </div>
                       </div>
                     </div>
@@ -202,7 +201,7 @@ export default function Incidents() {
                     </p>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span className={`badge ${type?.id === 'medical' ? 'badge-red' : type?.id === 'behavioural' ? 'badge-amber' : 'badge-blue'}`}>
+                        <span className={`badge ${type?.id === 'medical' ? 'badge-red' : type?.id === 'behavioural' ? 'badge-amber' : 'badge-blue'}`} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                           {type?.emoji} {type?.label}
                         </span>
                         <span className={`status-badge status-${inc.status}`}>
@@ -227,7 +226,7 @@ export default function Incidents() {
                         <button
                           className="btn btn-sm btn-primary"
                           onClick={() => handleStatusChange(inc.id, 'resolved')}
-                          style={{ fontSize: '0.75rem', padding: '6px 12px' }}
+                          style={{ fontSize: '0.75rem', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 4 }}
                         >
                           ✓ Resolve
                         </button>

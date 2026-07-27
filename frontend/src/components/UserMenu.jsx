@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-
 function getInitials(name) {
   return name ? name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) : '??';
 }
@@ -38,25 +37,6 @@ export default function UserMenu({ lightMode = false }) {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      {/* Notification Bell */}
-      <Link
-        to="/app/notifications"
-        className="btn-icon"
-        style={{
-          position: 'relative',
-          color: lightMode ? '#fff' : '#111',
-          background: lightMode ? 'rgba(255,255,255,0.15)' : 'transparent',
-          width: 36, height: 36
-        }}
-      >
-        🔔
-        {unreadCount > 0 && (
-          <span className="nav-badge" style={{ top: -2, right: -2 }}>
-            {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
-        )}
-      </Link>
-
       {/* Profile Dropdown */}
       <div className="profile-dropdown" ref={dropdownRef} style={{ position: 'relative' }}>
         <button
@@ -89,13 +69,13 @@ export default function UserMenu({ lightMode = false }) {
 
             <div className="dropdown-divider" />
 
-            <Link to="/app/profile" className="dropdown-item" onClick={() => setDropdownOpen(false)}>
+            <Link to="/app/profile" className="dropdown-item" onClick={() => setDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               👤 My Profile
             </Link>
 
             {isConsoleUser && (
-              <Link to="/console" className="dropdown-item" onClick={() => setDropdownOpen(false)}>
-                🖥️ Management Console
+              <Link to="/console" className="dropdown-item" onClick={() => setDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                ⚙️ Management Console
               </Link>
             )}
 
@@ -104,9 +84,9 @@ export default function UserMenu({ lightMode = false }) {
             <button
               onClick={handleLogout}
               className="dropdown-item"
-              style={{ width: '100%', textAlign: 'left', color: 'var(--red)' }}
+              style={{ width: '100%', textAlign: 'left', color: 'var(--red)', display: 'flex', alignItems: 'center', gap: 8 }}
             >
-              ↪ Log Out
+              🚪 Log Out
             </button>
           </div>
         )}

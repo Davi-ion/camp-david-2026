@@ -1,11 +1,10 @@
 import UserMenu from './UserMenu';
 import NotificationCentre from './NotificationCentre';
-
 export default function TopBar({ title }) {
   return (
     <header className="top-bar">
-      <div className="top-bar-title">
-        <span style={{ fontSize: '1.25rem' }}>⛺</span>
+      <div className="top-bar-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        ⛺
         {title || 'Camp David 2026'}
       </div>
       

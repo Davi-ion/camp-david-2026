@@ -102,7 +102,7 @@ export default function ConsoleSidebar({ isOpen, onClose }) {
       {/* Sidebar Footer */}
       <div className="console-sidebar-footer">
         <Link to="/app" className="console-portal-switch">
-          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Smartphone size={20} /></span>
+          <span style={{ fontSize: '1.25rem' }}>📱</span>
           <div>
             <div className="console-portal-switch-text">Staff Portal</div>
             <div className="console-portal-switch-sub">Switch to mobile view</div>

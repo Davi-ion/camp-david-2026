@@ -76,10 +76,10 @@ export default function ConsoleDashboard() {
   }, []);
 
   // Local state fallbacks while API loads
-  const totalCampers  = summary?.totalCampers  ?? state.campers.length;
+  const totalCampers  = summary?.totalCampers  ?? state.campers?.length ?? 0;
   const totalStaff    = summary?.totalStaff    ?? 6;
-  const openIncidents = summary?.openIncidents  ?? state.incidents.filter(i => i.status !== 'resolved').length;
-  const medAlerts     = summary?.totalMedicalAlerts ?? state.campers.filter(c => c.medicalNotes).length;
+  const openIncidents = summary?.openIncidents  ?? state.incidents?.filter(i => i.status !== 'resolved')?.length ?? 0;
+  const medAlerts     = summary?.totalMedicalAlerts ?? state.campers?.filter(c => c.medicalNotes)?.length ?? 0;
   const platoonSummary = summary?.platoonSummary ?? [];
   const recentActivity = summary?.recentActivity ?? [];
 
@@ -174,12 +174,12 @@ export default function ConsoleDashboard() {
                   {loadingApi ? 'Loading platoons…' : 'No platoon data available'}
                 </div>
               ) : (
-                platoonSummary.map(p => (
+                platoonSummary?.map(p => (
                   <div key={p.id} className="console-platoon-row">
                     <span style={{ width: 24, textAlign: 'center' }}>{p.emoji}</span>
                     <span className="console-platoon-label">{p.name}</span>
                     <div className="console-platoon-bar-track">
-                      <div className="console-platoon-bar-fill" style={{ width: `${Math.min(100, (p.camperCount / Math.max(...platoonSummary.map(x => x.camperCount), 1)) * 100)}%`, background: p.colorHex || 'var(--teal)' }} />
+                      <div className="console-platoon-bar-fill" style={{ width: `${Math.min(100, (p.camperCount / Math.max(...(platoonSummary?.map(x => x.camperCount) || [1]), 1)) * 100)}%`, background: p.colorHex || 'var(--teal)' }} />
                     </div>
                     <span className="console-platoon-count">{p.camperCount}</span>
                     {p.medicalAlerts > 0 && (
@@ -202,12 +202,12 @@ export default function ConsoleDashboard() {
                 {loadingApi ? 'Loading activity…' : 'No recent activity'}
               </div>
             ) : (
-              recentActivity.slice(0, 8).map(log => (
+              recentActivity?.slice(0, 8).map(log => (
                 <div key={log.id} className="console-activity-item">
-                  <div className={`console-activity-dot ${log.action.startsWith('CREATE') ? 'teal' : log.action.startsWith('UPDATE') ? 'blue' : log.action.startsWith('DELETE') ? 'red' : 'orange'}`} />
+                  <div className={`console-activity-dot ${log.action?.startsWith('CREATE') ? 'teal' : log.action?.startsWith('UPDATE') ? 'blue' : log.action?.startsWith('DELETE') ? 'red' : 'orange'}`} />
                   <div>
                     <div className="console-activity-text">
-                      <strong>{log.userName}</strong> — {log.action.replace(/_/g, ' ').toLowerCase()}
+                      <strong>{log.userName}</strong> — {log.action?.replace(/_/g, ' ').toLowerCase()}
                       {log.targetName ? ` · ${log.targetName}` : ''}
                     </div>
                     <div className="console-activity-time">
@@ -232,17 +232,17 @@ export default function ConsoleDashboard() {
               {upcomingSessions.length === 0 ? (
                 <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem', padding: '12px 0' }}>No sessions scheduled today.</div>
               ) : (
-                upcomingSessions.map(e => {
+                upcomingSessions?.map(e => {
                   const now2 = new Date();
-                  const [sh, sm] = e.time.split(':').map(Number);
-                  const [eh, em] = e.end.split(':').map(Number);
+                  const [sh, sm] = (e.time || '00:00').split(':').map(Number);
+                  const [eh, em] = (e.end || '00:00').split(':').map(Number);
                   const nowMin2 = now2.getHours() * 60 + now2.getMinutes();
                   const isNow = nowMin2 >= sh * 60 + sm && nowMin2 < eh * 60 + em;
                   return (
                     <div key={e.id || e.time} className="console-session-item">
                       <div className="console-session-time">
-                        {formatTime12(e.time).split(' ')[0]}
-                        <span>{formatTime12(e.time).split(' ')[1]}</span>
+                        {formatTime12(e.time || '00:00').split(' ')[0]}
+                        <span>{formatTime12(e.time || '00:00').split(' ')[1]}</span>
                       </div>
                       <div className="console-session-info">
                         <div className="console-session-name">{e.title}</div>
@@ -270,14 +270,14 @@ export default function ConsoleDashboard() {
                   {loadingApi ? 'Loading…' : 'No announcements yet.'}
                 </div>
               ) : (
-                announcements.slice(0, 4).map(ann => (
+                announcements?.slice(0, 4).map(ann => (
                   <div key={ann.id} style={{ marginBottom: 14, paddingBottom: 14, borderBottom: '1px solid var(--border-light)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                       {ann.urgent && <span style={{ fontSize: '0.625rem', fontWeight: 700, background: '#FEF2F2', color: 'var(--red)', padding: '2px 6px', borderRadius: 4 }}>URGENT</span>}
                       {ann.pinned && <span style={{ fontSize: '0.625rem', fontWeight: 700, background: '#F0FDF4', color: 'var(--teal)', padding: '2px 6px', borderRadius: 4, display: 'inline-flex', alignItems: 'center', gap: 4 }}>📌 PINNED</span>}
                       <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text)' }}>{ann.title}</span>
                     </div>
-                    <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{ann.body.slice(0, 100)}{ann.body.length > 100 ? '…' : ''}</p>
+                    <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{ann.body?.slice(0, 100)}{ann.body?.length > 100 ? '…' : ''}</p>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>
                       {ann.authorName} · {new Date(ann.createdAt).toLocaleDateString('en-NG', { day: '2-digit', month: 'short' })}
                     </div>

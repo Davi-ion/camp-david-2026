@@ -26,7 +26,7 @@ export default function Profile() {
 
   const fetchDrills = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       // Fetch drills assigned to me for today
       const res = await fetch(`${API}/api/drills?staffId=${user.id}&date=${currentCampDay.date}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -41,7 +41,7 @@ export default function Profile() {
 
   const toggleChecklist = async (drillId, itemId, currentStatus) => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       await fetch(`${API}/api/drills/checklist/${itemId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -64,7 +64,7 @@ export default function Profile() {
 
   const updateDrillStatus = async (drillId, status) => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       await fetch(`${API}/api/drills/${drillId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },

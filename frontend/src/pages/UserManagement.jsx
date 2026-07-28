@@ -15,7 +15,7 @@ export default function UserManagement() {
 
   const fetchUsers = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/users`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -28,7 +28,7 @@ export default function UserManagement() {
 
   const fetchRoles = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/roles`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -58,7 +58,7 @@ export default function UserManagement() {
   const handleSave = async (e) => {
     e.preventDefault();
     setMsg('');
-    const token = sessionStorage.getItem('camp_token');
+    const token = localStorage.getItem('camp_token');
     const isNew = !formData.id;
     
     try {
@@ -91,7 +91,7 @@ export default function UserManagement() {
     if (!confirm('Are you sure you want to reset this user\'s password? They will be forced to change it on next login.')) return;
     
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       // Using the default password from seed
       const res = await fetch(`${API}/api/users/${userId}/reset-password`, {
         method: 'POST',

@@ -64,7 +64,7 @@ export default function ConsoleDashboard() {
   const [loadingApi, setLoadingApi] = useState(true);
 
   useEffect(() => {
-    const token = sessionStorage.getItem('camp_token');
+    const token = localStorage.getItem('camp_token');
     const headers = { Authorization: `Bearer ${token}` };
     Promise.all([
       fetch(`${API}/api/reports/summary`, { headers }).then(r => r.ok ? r.json() : null).catch(() => null),

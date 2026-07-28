@@ -24,11 +24,11 @@ function reducer(state, action) {
   switch (action.type) {
     case 'LOGIN':
       // Store token securely
-      sessionStorage.setItem('camp_token', action.payload.token);
+      localStorage.setItem('camp_token', action.payload.token);
       return { ...state, currentUser: action.payload.user };
 
     case 'LOGOUT':
-      sessionStorage.removeItem('camp_token');
+      localStorage.removeItem('camp_token');
       return { ...state, currentUser: null, notifications: [] };
 
     case 'UPDATE_PROFILE':
@@ -108,11 +108,11 @@ function reducer(state, action) {
 
 export function AppProvider({ children }) {
   const saved = loadState();
-  const init = saved ? { ...initialState, ...saved, currentUser: null, notifications: [] } : initialState;
+  const init = saved ? { ...initialState, ...saved, notifications: [] } : initialState;
   const [state, dispatch] = useReducer(reducer, init);
 
   useEffect(() => {
-    const { currentUser, notifications, ...rest } = state;
+    const { notifications, ...rest } = state;
     localStorage.setItem('campDavid2026', JSON.stringify(rest));
   }, [state]);
 

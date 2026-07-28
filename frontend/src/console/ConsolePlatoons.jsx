@@ -16,7 +16,7 @@ export default function ConsolePlatoons() {
   const fetchPlatoons = async () => {
     setLoading(true);
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/platoons`, {
         headers: { Authorization: `Bearer ${token}` }
       });

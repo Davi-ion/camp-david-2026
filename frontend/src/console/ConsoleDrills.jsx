@@ -20,7 +20,7 @@ export default function ConsoleDrills() {
 
   const fetchDrills = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/drills`, { headers: { Authorization: `Bearer ${token}` } });
       setDrills(await res.json());
     } catch (err) {
@@ -32,7 +32,7 @@ export default function ConsoleDrills() {
 
   const fetchStaff = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/users`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setStaffList(data.users || []);
@@ -44,7 +44,7 @@ export default function ConsoleDrills() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const payload = { ...formData, checklist: formData.checklist.split('\n').filter(s => s.trim()) };
       await fetch(`${API}/api/drills`, {
         method: 'POST',
@@ -62,7 +62,7 @@ export default function ConsoleDrills() {
   const deleteDrill = async (id) => {
     if (!confirm('Delete this drill?')) return;
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       await fetch(`${API}/api/drills/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       fetchDrills();
     } catch (err) {

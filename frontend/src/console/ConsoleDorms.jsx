@@ -33,7 +33,7 @@ export default function ConsoleDorms() {
 
   const fetchDorms = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/dorms`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -52,7 +52,7 @@ export default function ConsoleDorms() {
   
   const fetchStaff = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/staff`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -66,7 +66,7 @@ export default function ConsoleDorms() {
 
   const loadDormCampers = async (dormId) => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/dorms/${dormId}/campers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -93,7 +93,7 @@ export default function ConsoleDorms() {
     setSelectedCamperIds(new Set());
     setAssignModalOpen(true);
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       // Fetch campers to find available ones matching gender
       const res = await fetch(`${API}/api/campers?limit=1000&status=active`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -122,7 +122,7 @@ export default function ConsoleDorms() {
   const submitAssignments = async () => {
     if (selectedCamperIds.size === 0) return setAssignModalOpen(false);
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       for (let id of selectedCamperIds) {
         await fetch(`${API}/api/campers/${id}`, {
           method: 'PUT',
@@ -143,7 +143,7 @@ export default function ConsoleDorms() {
   const removeCamper = async (camperId) => {
     if (!confirm('Are you sure you want to remove this camper from the dorm?')) return;
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/campers/${camperId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -171,7 +171,7 @@ export default function ConsoleDorms() {
   const submitMove = async () => {
     if (!newDormId) return;
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/campers/${camperToMove.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -201,7 +201,7 @@ export default function ConsoleDorms() {
   
   const submitSupervisors = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/dorms/${selectedDorm.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },

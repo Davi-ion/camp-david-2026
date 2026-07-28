@@ -48,7 +48,7 @@ function GlobalSearch() {
     if (!q || q.length < 2) { setResults(null); return; }
     setLoading(true);
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/search?q=${encodeURIComponent(q)}`, {
         headers: { Authorization: `Bearer ${token}` },
       });

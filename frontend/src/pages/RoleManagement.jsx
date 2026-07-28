@@ -10,7 +10,7 @@ export default function RoleManagement() {
 
   const fetchRoles = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/roles`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });

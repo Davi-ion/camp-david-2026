@@ -14,7 +14,7 @@ export default function ConsoleSettings() {
 
   const fetchSettings = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/settings`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -37,7 +37,7 @@ export default function ConsoleSettings() {
     setSaving(true);
     setSuccess(false);
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },

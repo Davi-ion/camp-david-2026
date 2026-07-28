@@ -54,7 +54,7 @@ export default function Login() {
 
       if (data.user.forcePasswordChange) {
         // Store token temporarily to allow force-change request
-        sessionStorage.setItem('camp_token', data.token);
+        localStorage.setItem('camp_token', data.token);
         setForceChange(true);
         setLoading(false);
         return;
@@ -94,7 +94,7 @@ export default function Login() {
     setError('');
 
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/auth/force-change-password`, {
         method: 'POST',
         headers: {

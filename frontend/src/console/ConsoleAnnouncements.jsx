@@ -26,7 +26,7 @@ export default function ConsoleAnnouncements() {
   const fetchAnnouncements = async () => {
     setLoading(true);
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/announcements`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -48,7 +48,7 @@ export default function ConsoleAnnouncements() {
 
   const fetchStats = async (id) => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/announcements/${id}/stats`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -66,7 +66,7 @@ export default function ConsoleAnnouncements() {
   const saveAnnouncement = async (e) => {
     e.preventDefault();
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       
       let payload = { ...formData };
       if (payload.isEmergency) {
@@ -94,7 +94,7 @@ export default function ConsoleAnnouncements() {
   const deleteAnn = async (id) => {
     if (!confirm('Delete announcement?')) return;
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       await fetch(`${API}/api/announcements/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
@@ -105,7 +105,7 @@ export default function ConsoleAnnouncements() {
 
   const togglePin = async (ann) => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       await fetch(`${API}/api/announcements/${ann.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },

@@ -33,7 +33,7 @@ export default function ConsoleCampers() {
   const fetchCampers = async () => {
     setLoading(true);
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const q = new URLSearchParams({ page, limit, status });
       if (search) q.append('search', search);
       const res = await fetch(`${API}/api/campers?${q}`, {
@@ -56,7 +56,7 @@ export default function ConsoleCampers() {
 
   const fetchDormsAndPlatoons = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const [dRes, pRes] = await Promise.all([
         fetch(`${API}/api/dorms`, { headers: { Authorization: `Bearer ${token}` } }),
         fetch(`${API}/api/platoons`, { headers: { Authorization: `Bearer ${token}` } })
@@ -104,7 +104,7 @@ export default function ConsoleCampers() {
     e.preventDefault();
     setModalError('');
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const url = editingCamper ? `${API}/api/campers/${editingCamper.id}` : `${API}/api/campers`;
       const method = editingCamper ? 'PUT' : 'POST';
       const res = await fetch(url, {
@@ -131,7 +131,7 @@ export default function ConsoleCampers() {
   const deactivateCamper = async (id) => {
     if (!confirm('Are you sure you want to deactivate this camper?')) return;
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/campers/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
@@ -144,7 +144,7 @@ export default function ConsoleCampers() {
 
   const handleExport = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/bulk/export/campers`, {
         headers: { Authorization: `Bearer ${token}` }
       });

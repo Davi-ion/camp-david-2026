@@ -11,7 +11,7 @@ export default function ConsoleReports() {
   const fetchReport = async () => {
     setLoading(true);
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/reports/${reportType}`, {
         headers: { Authorization: `Bearer ${token}` }
       });

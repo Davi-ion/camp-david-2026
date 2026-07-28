@@ -22,7 +22,7 @@ export default function ConsoleAttendance() {
 
   const fetchDormsAndPlatoons = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const [dRes, pRes] = await Promise.all([
         fetch(`${API}/api/dorms`, { headers: { Authorization: `Bearer ${token}` } }),
         fetch(`${API}/api/platoons`, { headers: { Authorization: `Bearer ${token}` } })

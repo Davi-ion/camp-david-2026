@@ -35,7 +35,7 @@ export default function NotificationCentre({ lightMode }) {
 
   const fetchNotifications = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/notifications?staffId=${state.currentUser.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -49,7 +49,7 @@ export default function NotificationCentre({ lightMode }) {
 
   const markAllRead = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       await fetch(`${API}/api/notifications/read-all`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -61,7 +61,7 @@ export default function NotificationCentre({ lightMode }) {
 
   const markRead = async (id) => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       await fetch(`${API}/api/notifications/${id}/read`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
@@ -72,7 +72,7 @@ export default function NotificationCentre({ lightMode }) {
 
   const deleteNotification = async (id) => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       await fetch(`${API}/api/notifications/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }

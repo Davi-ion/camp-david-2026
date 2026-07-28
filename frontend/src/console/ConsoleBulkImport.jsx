@@ -25,7 +25,7 @@ export default function ConsoleBulkImport() {
       formData.append('file', file);
       formData.append('mode', 'preview');
 
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/bulk/import/${entity}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
@@ -54,7 +54,7 @@ export default function ConsoleBulkImport() {
       formData.append('file', file);
       formData.append('mode', 'commit');
 
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/bulk/import/${entity}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },

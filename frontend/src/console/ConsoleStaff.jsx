@@ -25,7 +25,7 @@ export default function ConsoleStaff() {
   const fetchStaff = async () => {
     setLoading(true);
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const q = new URLSearchParams({ page, limit, status });
       if (search) q.append('search', search);
 
@@ -54,7 +54,7 @@ export default function ConsoleStaff() {
 
   const handleExport = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/bulk/export/staff`, {
         headers: { Authorization: `Bearer ${token}` }
       });

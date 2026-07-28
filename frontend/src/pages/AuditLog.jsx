@@ -10,7 +10,7 @@ export default function AuditLog() {
 
   const fetchLogs = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/audit`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });

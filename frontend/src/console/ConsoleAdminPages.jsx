@@ -20,7 +20,7 @@ export function ConsoleUserManagement() {
 
   const fetchUsers = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -31,7 +31,7 @@ export function ConsoleUserManagement() {
 
   const fetchRoles = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/roles`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -47,7 +47,7 @@ export function ConsoleUserManagement() {
   const handleSave = async (e) => {
     e.preventDefault();
     setMsg('');
-    const token = sessionStorage.getItem('camp_token');
+    const token = localStorage.getItem('camp_token');
     const isNew = !formData.id;
     try {
       const url = isNew ? `${API}/api/users` : `${API}/api/users/${formData.id}`;
@@ -65,7 +65,7 @@ export function ConsoleUserManagement() {
 
   const handleResetPassword = async (userId) => {
     if (!confirm('Reset this user\'s password to the default?')) return;
-    const token = sessionStorage.getItem('camp_token');
+    const token = localStorage.getItem('camp_token');
     const res = await fetch(`${API}/api/users/${userId}/reset-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -187,7 +187,7 @@ export function ConsoleRoleManagement() {
 
   const fetchRoles = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/roles`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setRoles(data || []);
@@ -222,7 +222,7 @@ export function ConsoleRoleManagement() {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    const token = sessionStorage.getItem('camp_token');
+    const token = localStorage.getItem('camp_token');
     const isNew = !formData.id;
     try {
       const url = isNew ? `${API}/api/roles` : `${API}/api/roles/${formData.id}`;
@@ -239,7 +239,7 @@ export function ConsoleRoleManagement() {
 
   const deleteRole = async (id) => {
     if (!confirm('Are you sure you want to delete this role? Users assigned to it will lose access.')) return;
-    const token = sessionStorage.getItem('camp_token');
+    const token = localStorage.getItem('camp_token');
     try {
       await fetch(`${API}/api/roles/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       fetchRoles();
@@ -384,7 +384,7 @@ export function ConsoleAuditLog() {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const token = sessionStorage.getItem('camp_token');
+        const token = localStorage.getItem('camp_token');
         const res = await fetch(`${API}/api/audit`, {
           headers: { Authorization: `Bearer ${token}` },
         });

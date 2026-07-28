@@ -104,7 +104,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
-        const token = sessionStorage.getItem('camp_token');
+        const token = localStorage.getItem('camp_token');
         const res = await fetch(`${API}/api/announcements`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -126,7 +126,7 @@ export default function Dashboard() {
 
   const markAnnRead = async (id) => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       await fetch(`${API}/api/announcements/${id}/read`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }

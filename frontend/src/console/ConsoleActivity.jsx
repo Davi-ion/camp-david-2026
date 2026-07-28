@@ -13,7 +13,7 @@ export default function ConsoleActivity() {
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/audit?page=${page}&limit=${limit}`, {
         headers: { Authorization: `Bearer ${token}` }
       });

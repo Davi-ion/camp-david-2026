@@ -12,7 +12,7 @@ export default function ConsoleVenues() {
 
   const fetchVenues = async () => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/schedule/venues`, { headers: { Authorization: `Bearer ${token}` } });
       setVenues(await res.json());
     } catch (err) {
@@ -29,7 +29,7 @@ export default function ConsoleVenues() {
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       await fetch(`${API}/api/schedule/venues`, {
         method: 'POST',
         headers: {

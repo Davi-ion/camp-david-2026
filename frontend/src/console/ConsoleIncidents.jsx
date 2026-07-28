@@ -35,7 +35,7 @@ export default function ConsoleIncidents() {
   const fetchIncidents = async () => {
     setLoading(true);
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const q = new URLSearchParams({ page, limit });
       if (statusFilter !== 'all') q.append('status', statusFilter);
       if (categoryFilter) q.append('category', categoryFilter);
@@ -66,7 +66,7 @@ export default function ConsoleIncidents() {
 
   const updateIncidentStatus = async (id, status) => {
     try {
-      const token = sessionStorage.getItem('camp_token');
+      const token = localStorage.getItem('camp_token');
       const res = await fetch(`${API}/api/incidents/${id}`, {
         method: 'PUT',
         headers: {

@@ -3,7 +3,6 @@ import { useApp } from '../context/AppContext';
 import { usePermissions } from '../hooks/usePermissions';
 import { CAMP_DAYS } from '../data/schedule';
 import { sessions } from '../data/sessions';
-import { GROUPS } from '../data/campers';
 import TopBar from '../components/TopBar';
 import EmptyState from '../components/EmptyState';
 function getInitials(name) {
@@ -36,12 +35,12 @@ export default function RollCall() {
   const visibleCampers = useMemo(() => {
     let list = state.campers;
     if (!isAdmin) {
-      list = list.filter((c) => c.group === user?.group);
+      list = list.filter((c) => c.platoon?.name === user?.platoon?.name || c.platoonId === user?.platoonId);
     } else if (groupFilter !== 'all') {
-      list = list.filter((c) => c.group === groupFilter);
+      list = list.filter((c) => c.platoon?.id === groupFilter || c.dorm?.id === groupFilter);
     }
     return list;
-  }, [state.campers, user, groupFilter]);
+  }, [state.campers, user, groupFilter, isAdmin]);
 
   // Group campers by team or dorm based on Smart Grouping Engine
   const groupedCampers = useMemo(() => {
@@ -149,16 +148,33 @@ export default function RollCall() {
             >
               All
             </button>
-            {GROUPS.map((g) => (
-              <button
-                key={g.id}
-                className={`filter-tab ${groupFilter === g.id ? 'active' : ''}`}
-                onClick={() => setGroupFilter(g.id)}
-                style={{ display: 'flex', alignItems: 'center', gap: 4 }}
-              >
-                {g.emoji} {g.name}
-              </button>
-            ))}
+            {Array.from(new Set(state.campers.map(c => c.platoon?.id).filter(Boolean))).map(id => {
+              const platoon = state.campers.find(c => c.platoon?.id === id)?.platoon;
+              return (
+                <button
+                  key={id}
+                  className={`filter-tab ${groupFilter === id ? 'active' : ''}`}
+                  onClick={() => setGroupFilter(id)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                >
+                  {platoon.emoji || '🏴'} {platoon.name}
+                </button>
+              );
+            })}
+            <div style={{ width: '1px', background: 'var(--border)', margin: '0 8px' }} />
+            {Array.from(new Set(state.campers.map(c => c.dorm?.id).filter(Boolean))).map(id => {
+              const dorm = state.campers.find(c => c.dorm?.id === id)?.dorm;
+              return (
+                <button
+                  key={id}
+                  className={`filter-tab ${groupFilter === id ? 'active' : ''}`}
+                  onClick={() => setGroupFilter(id)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                >
+                  🏢 {dorm.name}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -224,12 +240,17 @@ export default function RollCall() {
           />
         ) : (
           <div style={{ marginTop: 16 }}>
-            {Object.entries(groupedCampers).map(([groupId, camperList]) => {
-              const group = GROUPS.find((g) => g.id === groupId);
+            {Object.entries(groupedCampers).map(([groupName, camperList]) => {
+              const firstCamper = camperList[0];
+              let emoji = '🛡️';
+              if (firstCamper) {
+                if (firstCamper.platoon?.name === groupName) emoji = firstCamper.platoon.emoji || '🏴';
+                else if (firstCamper.dorm?.name === groupName) emoji = '🏢';
+              }
               return (
-                <div key={groupId}>
+                <div key={groupName}>
                   <div className="group-header">
-                    {group?.emoji || '🛡️'} {group?.name || groupId}
+                    {emoji} {groupName}
                   </div>
                   {camperList.map((camper) => {
                     const status = sessionData[camper.id] || null;

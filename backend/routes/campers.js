@@ -33,7 +33,10 @@ router.get('/', authenticate, requirePermission('view:campers'), async (req, res
     const [campers, total] = await Promise.all([
       prisma.camper.findMany({
         where,
-        include: { platoon: { select: { id: true, name: true, emoji: true, colorHex: true } } },
+        include: { 
+          platoon: { select: { id: true, name: true, emoji: true, colorHex: true } },
+          dorm: { select: { id: true, name: true, gender: true } }
+        },
         orderBy: { name: 'asc' },
         skip: (Number(page) - 1) * Number(limit),
         take: Number(limit),

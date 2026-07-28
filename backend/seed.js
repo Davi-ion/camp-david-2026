@@ -57,6 +57,23 @@ async function seed() {
       platoonIds[pName] = platoon.id;
     }
 
+    // ── Dorms ────────────────────────────────────────────────────────
+    const officialDorms = [
+      { name: 'LQF1', gender: 'female', capacity: 100 },
+      { name: 'LQF2', gender: 'female', capacity: 100 },
+      { name: 'LQM1', gender: 'male', capacity: 100 },
+      { name: 'LQM2', gender: 'male', capacity: 100 },
+    ];
+    const dormIds = {};
+    for (const d of officialDorms) {
+      const dorm = await prisma.dorm.upsert({
+        where: { name: d.name },
+        update: { gender: d.gender, capacity: d.capacity },
+        create: { name: d.name, gender: d.gender, capacity: d.capacity },
+      });
+      dormIds[d.name] = dorm.id;
+    }
+
     // ── Staff Generation ─────────────────────────────────────────────────────
     const staffToCreate = [];
     let staffCount = 1;
@@ -168,9 +185,13 @@ async function seed() {
       const regNum = `CD2026-${1000 + i}`;
       const qrCode = `CD26-QR-${1000 + i}`;
 
+      // Assign Dorm
+      const dormName = isMale ? (i % 2 === 0 ? 'LQM1' : 'LQM2') : (i % 2 === 0 ? 'LQF1' : 'LQF2');
+      const dormId = dormIds[dormName];
+
       await prisma.camper.upsert({
         where: { qrCode: qrCode }, // Use qrCode as unique for upsert or id
-        update: { platoonId, counsellorId, medicalNotes, dietaryRestrictions },
+        update: { platoonId, counsellorId, medicalNotes, dietaryRestrictions, dormId },
         create: {
           id: `c${i}`,
           registrationNumber: regNum,
@@ -179,6 +200,7 @@ async function seed() {
           gender: isMale ? 'Male' : 'Female',
           platoonId,
           counsellorId,
+          dormId,
           medicalNotes,
           dietaryRestrictions,
           qrCode,

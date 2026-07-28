@@ -2,31 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { PrismaClient } from './generated/prisma/client.ts';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { hashPassword } from './utils/password.js';
-
-// Routes
-import authRoutes from './routes/auth.js';
-import usersRoutes from './routes/users.js';
-import rolesRoutes from './routes/roles.js';
-import auditRoutes from './routes/audit.js';
-import campersRoutes from './routes/campers.js';
-import platoonsRoutes from './routes/platoons.js';
-import incidentsRoutes from './routes/incidents.js';
-import announcementsRoutes from './routes/announcements.js';
-import settingsRoutes from './routes/settings.js';
-import reportsRoutes from './routes/reports.js';
-import drillsRoutes from './routes/drills.js';
-import notificationsRoutes from './routes/notifications.js';
-import bulkRoutes from './routes/bulk.js';
-import dormsRoutes from './routes/dorms.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPath = path.join(__dirname, 'dev.db');
-const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath}` });
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 
 const app = express();
 

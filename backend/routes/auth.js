@@ -1,17 +1,7 @@
 import { Router } from 'express';
 import crypto from 'crypto';
 import { PrismaClient } from '../generated/prisma/client.ts';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { verifyPassword, hashPassword, validatePasswordStrength } from '../utils/password.js';
-import { signToken } from '../utils/token.js';
-import { authenticate } from '../middleware/auth.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPath = path.join(__dirname, '../dev.db');
-const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath}` });
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 
 const router = Router();
 

@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
-import { PrismaClient } from './generated/prisma/client.ts';
+import { prisma } from './db.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { hashPassword } from './utils/password.js';
@@ -22,7 +22,7 @@ import notificationsRoutes from './routes/notifications.js';
 import bulkRoutes from './routes/bulk.js';
 import dormsRoutes from './routes/dorms.js';
 
-const prisma = new PrismaClient({ datasourceUrl: process.env.DIRECT_URL || process.env.DATABASE_URL });
+
 
 const app = express();
 

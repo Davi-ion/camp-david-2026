@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import crypto from 'crypto';
-import { PrismaClient } from '../generated/prisma/client.ts';
+import { prisma } from '../db.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { verifyPassword, hashPassword, validatePasswordStrength } from '../utils/password.js';
 import { signToken } from '../utils/token.js';
 import { authenticate } from '../middleware/auth.js';
 
-const prisma = new PrismaClient({ datasourceUrl: process.env.DIRECT_URL || process.env.DATABASE_URL });
+
 
 const router = Router();
 

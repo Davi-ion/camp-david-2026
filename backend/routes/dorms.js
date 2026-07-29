@@ -1,10 +1,10 @@
 import express from 'express';
-import { PrismaClient } from '../generated/prisma/client.ts';
+import { prisma } from '../db.js';
 import { authenticate } from '../middleware/auth.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const prisma = new PrismaClient({ datasourceUrl: process.env.DIRECT_URL || process.env.DATABASE_URL });
+
 
 const router = express.Router();
 

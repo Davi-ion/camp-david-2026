@@ -1,7 +1,7 @@
-import { PrismaClient } from './generated/prisma/client.ts';
+import { prisma } from './db.js';
 import { hashPassword } from './utils/password.js';
 
-const prisma = new PrismaClient({ datasourceUrl: process.env.DIRECT_URL || process.env.DATABASE_URL });
+
 
 async function seed() {
   try {

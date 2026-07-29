@@ -1,8 +1,8 @@
-import { PrismaClient } from './generated/prisma/client.ts';
+import { prisma } from './db.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const prisma = new PrismaClient({ datasourceUrl: process.env.DIRECT_URL || process.env.DATABASE_URL });
+
 
 async function main() {
   const dorms = [

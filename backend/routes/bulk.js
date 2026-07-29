@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { PrismaClient } from '../generated/prisma/client.ts';
+import { prisma } from '../db.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { authenticate } from '../middleware/auth.js';
@@ -7,7 +7,7 @@ import { requirePermission } from '../middleware/rbac.js';
 import multer from 'multer';
 import * as xlsx from 'xlsx';
 
-const prisma = new PrismaClient({ datasourceUrl: process.env.DIRECT_URL || process.env.DATABASE_URL });
+
 const router = Router();
 
 const upload = multer({ storage: multer.memoryStorage() });

@@ -1,6 +1,12 @@
 import { Router } from 'express';
 import { PrismaClient } from '../generated/prisma/client.ts';
-const prisma = new PrismaClient();
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { hashPassword, validatePasswordStrength } from '../utils/password.js';
+import { authenticate } from '../middleware/auth.js';
+import { requirePermission } from '../middleware/rbac.js';
+
+const prisma = new PrismaClient({ datasourceUrl: process.env.DIRECT_URL || process.env.DATABASE_URL });
 
 const router = Router();
 const SAFE_FIELDS = { passwordHash: false, pin: false };
